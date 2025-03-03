@@ -1,23 +1,26 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import "./App.css";
+import AuthModal from "./AuthModal";
 
 function App() {
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <div className="App">
+      {/* Sağ üst köşeye "Login | Sign Up" linkleri */}
+      <div className="auth-links">
+        <span onClick={() => setModalOpen(true)}>Login</span> | 
+        <span onClick={() => setModalOpen(true)}> Sign Up</span>
+      </div>
+
+      {/* Başlık kısmı */}
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <h1>Welcome to SwagLab</h1>
+        <p>Swagging up your style</p>
       </header>
+
+      {/* Modalı çağırıyoruz */}
+      <AuthModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );
 }
