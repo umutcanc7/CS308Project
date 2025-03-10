@@ -12,6 +12,13 @@ function Login() {
     alert("Giriş başarılı! (şimdilik sadece konsola yazılıyor)");
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+        e.preventDefault();
+        handleLogin(e);
+    }
+  }
+  
   return (
     <div className="login-container">
       <h2>Giriş Yap</h2>
@@ -21,6 +28,7 @@ function Login() {
           placeholder="E-mail"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={handleKeyDown}
           required
         />
         <input
@@ -28,6 +36,7 @@ function Login() {
           placeholder="Şifre"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={handleKeyDown}
           required
         />
         <button type="submit">Giriş Yap</button>
