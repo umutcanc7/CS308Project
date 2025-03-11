@@ -1,5 +1,6 @@
 // Menu.js
 import React from "react";
+import { Link } from "react-router-dom";
 import "./Menu.css";
 
 function Menu() {
@@ -11,8 +12,15 @@ function Menu() {
         <span></span>
       </div>
       <div className="menu-items">
-        <a href="#shop" className="menu-item">Shop</a>
-        <a href="#magazines" className="menu-item">Magazines</a>
+        <Link to="/" className="menu-item">
+          Home
+        </Link>
+        <Link to="/shop" className="menu-item">
+          Shop
+        </Link>
+        <Link to="/magazines" className="menu-item">
+          Magazines
+        </Link>
       </div>
     </div>
   );
