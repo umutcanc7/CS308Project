@@ -1,0 +1,92 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #F0EAD6; /* Crème background */
+  color: #000;       /* Black text */
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  text-align: center;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.close-button {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+  font-size: 24px;
+  color: #000;
+}
+
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+/* Default (inactive) tab buttons: crème background with black text */
+.tabs button {
+  background: #F0EAD6;
+  color: #000;
+  border: 1px solid #F0EAD6;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 8px 12px;
+  margin: 0 4px;
+  transition: background-color 0.3s ease;
+}
+
+/* Active tab button: black background with crème text */
+.tabs .active {
+  background: #000;
+  color: #F0EAD6;
+  font-weight: bold;
+  border: 1px solid #000;
+}
+
+/* Hover effect for all tab buttons: button becomes gray with black text */
+.tabs button:hover {
+  background-color: #ccc7b3;
+  color: #000;
+}
+
+input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #000;
+  border-radius: 5px;
+  background: #F0EAD6;
+  color: #000;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #F0EAD6;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #000;
+  font-weight: bold;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button:hover {
+  background: #000;
+  color: #F0EAD6;
+  border: 1px solid #000;
+}
