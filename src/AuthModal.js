@@ -5,6 +5,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -17,7 +18,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    alert("Login Successful (For testing purposes)");
+    alert(`Login Successful (Remember me: ${rememberMe ? "Yes" : "No"})`);
   };
 
   const handleSignUp = (e) => {
@@ -27,6 +28,11 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
       return;
     }
     alert("Sign Up Successful (For testing purposes)");
+  };
+
+  const handleForgotPassword = (e) => {
+    e.preventDefault();
+    alert("Forgot password functionality not implemented yet.");
   };
 
   if (!isOpen) return null;
@@ -69,7 +75,27 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            {/* Extra login options: "Remember me" only */}
+            <div className="login-extra">
+              <label className="remember-me">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                Remember me
+              </label>
+            </div>
             <button type="submit">Log In</button>
+
+            {/* Forgot password link beneath the button */}
+            <a
+              href="#"
+              onClick={handleForgotPassword}
+              className="forgot-password"
+            >
+              Forgot my password?
+            </a>
           </form>
         ) : (
           <form onSubmit={handleSignUp}>
