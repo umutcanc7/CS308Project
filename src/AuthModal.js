@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./AuthModal.css";
 
 function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
@@ -9,6 +10,8 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isOpen) {
@@ -32,8 +35,11 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
 
   const handleForgotPassword = (e) => {
     e.preventDefault();
-    alert("Forgot password functionality not implemented yet.");
+    onClose();         
+    navigate("/reset-password"); // Redirect to the reset-password page
   };
+
+  if (!isOpen) return null;
 
   if (!isOpen) return null;
 
