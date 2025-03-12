@@ -6,6 +6,7 @@ import AuthModal from "./AuthModal";
 import Menu from "./Menu";
 import Shop from "./Shop";
 import logo from "./assets/logo.png";
+import ResetPassword from "./ResetPassword"; // Newly added import
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,6 +37,7 @@ function App() {
           }
         />
         <Route path="/shop" element={<Shop />} />
+        <Route path="/reset-password" element={<ResetPassword />} /> {/* New route */}
       </Routes>
 
       <AuthModal
