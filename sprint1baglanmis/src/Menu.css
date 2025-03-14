@@ -1,0 +1,69 @@
+/* Menu.css */
+.menu {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    /* Increased clickable area */
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Hamburger icon styling */
+  .hamburger-icon {
+    width: 30px;
+    height: 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
+  
+  .hamburger-icon span {
+    display: block;
+    height: 3px;
+    background-color: #000;
+    border-radius: 2px;
+  }
+  
+  /* Make the hamburger icon pop out on hover */
+  .menu:hover .hamburger-icon {
+    transform: scale(1.2);
+  }
+  
+  /* Menu items panel (hidden initially) */
+  .menu-items {
+    position: absolute;
+    top: 0;
+    left: 70px; /* Positioned to the right of the enlarged hit area */
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 4px;
+    transform: translateX(-100%);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+  }
+  
+  /* Reveal the menu items when hovering over the menu container */
+  .menu:hover .menu-items {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  
+  .menu-item {
+    color: #fff;
+    text-decoration: none;
+    display: block;
+    margin: 5px 0;
+  }
+  
+  .menu-item:hover {
+    text-decoration: underline;
+  }
+  

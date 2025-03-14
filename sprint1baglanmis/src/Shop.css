@@ -1,0 +1,34 @@
+/* Shop.css */
+.shop-page {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .shop-header {
+    margin-bottom: 20px;
+  }
+  
+  .products {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .product {
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 8px;
+    width: 200px;
+    transition: transform 0.3s ease;
+  }
+  
+  .product:hover {
+    transform: scale(1.05);
+  }
+  
+  .product img {
+    width: 100%;
+    height: auto;
+  }
+  
