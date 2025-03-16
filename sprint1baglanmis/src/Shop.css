@@ -46,4 +46,21 @@
 .cart-icon,
 .heart-icon {
   margin-left: 10px;
-}  
+}
+
+/* Icon styling with vertical alignment adjustments */
+.icon {
+  width: 24px;
+  height: 24px;
+  margin: 0 8px;
+  cursor: pointer;
+  vertical-align: middle;
+  margin-top: 4px; /* Adjust this value as needed */
+}
+
+/* Sign out button styling */
+.signout-button {
+  cursor: pointer;
+  margin-left: 12px;
+  vertical-align: middle;
+}
