@@ -1,48 +1,66 @@
 // src/App.js
-
-import React, { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./App.css";
 import AuthModal from "./AuthModal";
-import Menu from "./Menu";
+import Home from "./Home";
 import Shop from "./Shop";
-import logo from "./assets/logo.png";
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalTab, setModalTab] = useState("login");
+  // Initialize authentication state based on token presence
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsSignedIn(true);
+    }
+  }, []);
+
+  // Listen for local storage changes across tabs (e.g. sign out) 
+  // Bu sayede bir başka tab'de sign out yapılırsa otomatik olarak tüm tab'lerden sign out yapılıyor
+  useEffect(() => {
+    const handleStorageChange = (event) => {
+      if (event.key === "token" && !event.newValue) {
+        setIsSignedIn(false);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const openModal = (tab) => {
     setModalTab(tab);
     setIsModalOpen(true);
   };
 
+  const signOut = () => {
+    localStorage.removeItem("token");
+    setIsSignedIn(false);
+    navigate("/home");
+  };
+
   return (
     <div className="App">
-      <Menu />
-
       <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/home" element={<Home openModal={openModal} />} />
         <Route
-          path="/"
+          path="/shop"
           element={
-            <>
-              <header className="App-header">
-                <img src={logo} alt="Logo" className="app-logo" />
-              </header>
-              <div className="auth-links">
-                <span onClick={() => openModal("login")}>Login</span> |{" "}
-                <span onClick={() => openModal("signup")}>Sign Up</span>
-              </div>
-            </>
+            <Shop openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />
           }
         />
-        <Route path="/shop" element={<Shop />} />
       </Routes>
 
       <AuthModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         defaultActiveTab={modalTab}
+        setIsSignedIn={setIsSignedIn}
       />
     </div>
   );
