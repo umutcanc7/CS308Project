@@ -13,6 +13,14 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
 
   const navigate = useNavigate();
 
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+    setPhone("");
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -28,6 +36,8 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
         localStorage.setItem("token", data.token);
         alert("Login Successful");
         setIsSignedIn(true);
+        // Reset what is left on the modal
+        resetForm();
         onClose();
         navigate("/shop");
       } else {
@@ -62,6 +72,8 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
         localStorage.setItem("token", data.token);
         alert("User registered successfully!");
         setIsSignedIn(true);
+        // Reset what is left on the modal
+        resetForm();
         onClose();
         navigate("/shop");
       } else {
