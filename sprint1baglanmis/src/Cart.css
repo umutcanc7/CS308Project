@@ -1,0 +1,162 @@
+/* Cart.css */
+
+/* Main cart container */
+.cart-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Cart page title */
+.cart-page h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333333;
+}
+
+/* Empty cart message styling */
+.empty-cart {
+  text-align: center;
+  padding: 50px 0;
+  color: #666666;
+}
+
+/* Cart items list */
+.cart-items {
+  margin-bottom: 30px;
+}
+
+/* Individual cart item */
+.cart-item {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #eeeeee;
+  padding: 15px 0;
+}
+
+/* Product image inside cart item */
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 15px;
+  border-radius: 4px;
+}
+
+/* Cart item details container */
+.cart-item-details {
+  flex: 1;
+}
+
+/* Cart item title */
+.cart-item-details h3 {
+  margin: 0 0 5px 0;
+  font-size: 16px;
+}
+
+/* Cart item price styling */
+.cart-item-price {
+  color: #666666;
+  margin: 0;
+}
+
+/* Quantity controls for cart item */
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  margin: 0 20px;
+}
+
+/* Quantity button style */
+.quantity-btn {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f0;
+  cursor: pointer;
+}
+
+/* Quantity display style */
+.cart-item-quantity span {
+  margin: 0 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Total price for each cart item */
+.cart-item-total {
+  font-weight: bold;
+  margin: 0 20px;
+  min-width: 70px;
+  text-align: right;
+}
+
+/* Remove button styling */
+.remove-btn {
+  padding: 5px 10px;
+  background-color: #ff4d4d;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Cart summary container */
+.cart-summary {
+  border-top: 2px solid #dddddd;
+  padding-top: 20px;
+}
+
+/* Total amount display */
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333333;
+}
+
+/* Cart actions container */
+.cart-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Buttons for continuing shopping and checkout */
+.continue-shopping-btn,
+.checkout-btn {
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: bold;
+}
+
+/* Continue shopping button styling */
+.continue-shopping-btn {
+  background-color: #f0f0f0;
+  color: #333333;
+  border: 1px solid #dddddd;
+}
+
+/* Checkout button styling */
+.checkout-btn {
+  background-color: #4caf50;
+  color: #ffffff;
+  border: none;
+}
+
+/* Hover states for buttons */
+.continue-shopping-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.checkout-btn:hover {
+  background-color: #45a049;
+}
