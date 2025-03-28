@@ -3,6 +3,7 @@ const router = express.Router();
 const Review = require("../models/Review");
 const Product = require("../models/Product");
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose"); // ✅ Ortalama hesaplamada ObjectId için gerekli
 
 // Middleware: Kullanıcının token'ını doğrula
 function authenticateToken(req, res, next) {
@@ -40,6 +41,14 @@ router.post("/:productId", authenticateToken, async (req, res) => {
         });
 
         await review.save();
+
+        // ✅ Ortalama rating hesapla ve Product modeline yaz
+        const allReviews = await Review.find({ productId });
+        const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
+        const average = totalRating / allReviews.length;
+
+        await Product.findByIdAndUpdate(productId, { averageRating: average });
+
         res.status(201).json({ success: true, message: "Review added successfully." });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });

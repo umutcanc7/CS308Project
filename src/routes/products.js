@@ -34,4 +34,32 @@ router.get("/", async (req, res) => {
     }
 });
 
+// Ürün arama (GET /products/search?query=deger)
+// Ürün arama (GET /products/search?query=deger)
+router.get("/search", async (req, res) => {
+    const query = req.query.query;
+
+    if (!query) {
+        return res.status(400).json({ success: false, error: "Arama değeri gerekli." });
+    }
+
+    try {
+        console.log("🔍 Arama değeri:", query);
+
+        const results = await Product.find({
+            $or: [
+                { name: { $regex: query, $options: "i" } },
+                { category: { $regex: query, $options: "i" } }
+            ]
+        });
+
+        console.log("✅ Bulunan ürün sayisi:", results.length);
+        res.json({ success: true, data: results });
+    } catch (error) {
+        console.error("❌ Hata:", error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
 module.exports = router;
