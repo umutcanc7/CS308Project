@@ -34,6 +34,32 @@ router.get("/", async (req, res) => {
     }
 });
 
+// Ürünleri sıralama (GET /products/sort?by=price&order=asc)
+router.get("/sort", async (req, res) => {
+    const { by, order } = req.query;
+
+    const sortFields = {
+        name: "name",
+        price: "price",
+        rating: "averageRating"
+    };
+
+    const sortBy = sortFields[by];
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    if (!sortBy) {
+        return res.status(400).json({ success: false, error: "Geçerli bir sıralama kriteri girin (name, price, rating)" });
+    }
+
+    try {
+        const products = await Product.find().sort({ [sortBy]: sortOrder });
+        res.json({ success: true, data: products });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+
 // Ürün arama (GET /products/search?query=deger)
 // Ürün arama (GET /products/search?query=deger)
 router.get("/search", async (req, res) => {
