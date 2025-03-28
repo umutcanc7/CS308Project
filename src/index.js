@@ -18,6 +18,15 @@ app.use(express.static("public")); // Static files
 const authRoutes = require("./routes/auth");
 app.use("/auth", authRoutes);
 
+const productRoutes = require("./routes/products"); // ✅ ürün router'ını dahil et
+app.use("/products", productRoutes); // ✅ /products altında kullanılsın
+
+const reviewRoutes = require("./routes/reviews"); // ✅ yorum router'ını dahil et
+app.use("/reviews", reviewRoutes); // ✅ /reviews altında kullanılsın
+
+const cartRoutes = require("./routes/cart"); // ✅ sepet router'ını dahil et
+app.use("/cart", cartRoutes); // ✅ /cart altında kullanılsın
+
 // Routes for frontend pages
 app.get("/", (req, res) => {
     res.render("login"); // Default page
