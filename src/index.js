@@ -3,6 +3,7 @@ const express = require("express");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 const connectDB = require("./config"); // MongoDB bağlantısını dahil et
+const cors = require("cors");
 
 const app = express();
 
@@ -10,6 +11,7 @@ const app = express();
 connectDB();
 
 // Middleware
+app.use(cors());
 app.use(express.json()); // JSON verileri işlemek için
 app.use(express.urlencoded({ extended: true })); // Form verilerini almak için
 app.set("view engine", "ejs");
