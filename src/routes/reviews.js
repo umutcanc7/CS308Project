@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const Review = require("../models/Review");
 const Product = require("../models/Product");
+const Purchase = require("../models/Purchase"); // ✅ NEW: Import purchase model
 const jwt = require("jsonwebtoken");
-const mongoose = require("mongoose"); // ✅ Ortalama hesaplamada ObjectId için gerekli
 
-// Middleware: Kullanıcının token'ını doğrula
+// Middleware: Token authentication
 function authenticateToken(req, res, next) {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -18,7 +18,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Yorum ekle (POST /reviews/:productId)
+// POST /reviews/:productId — Add a review (only if purchased)
 router.post("/:productId", authenticateToken, async (req, res) => {
     const { rating, comment } = req.body;
     const { productId } = req.params;
@@ -28,6 +28,20 @@ router.post("/:productId", authenticateToken, async (req, res) => {
     }
 
     try {
+        // ✅ Check if user has purchased the product
+        const hasPurchased = await Purchase.findOne({
+            userId: req.user.id,
+            productId
+        });
+
+        if (!hasPurchased) {
+            return res.status(403).json({
+                success: false,
+                error: "You can only review products you've purchased."
+            });
+        }
+
+        // ✅ Check if user already reviewed this product
         const existing = await Review.findOne({ userId: req.user.id, productId });
         if (existing) {
             return res.status(400).json({ success: false, error: "You already reviewed this product." });
@@ -42,7 +56,7 @@ router.post("/:productId", authenticateToken, async (req, res) => {
 
         await review.save();
 
-        // ✅ Ortalama rating hesapla ve Product modeline yaz
+        // ✅ Recalculate average rating
         const allReviews = await Review.find({ productId });
         const totalRating = allReviews.reduce((sum, r) => sum + r.rating, 0);
         const average = totalRating / allReviews.length;
@@ -55,7 +69,7 @@ router.post("/:productId", authenticateToken, async (req, res) => {
     }
 });
 
-// Belirli ürünün tüm yorumlarını getir (GET /reviews/:productId)
+// GET /reviews/:productId — Get all reviews for a product
 router.get("/:productId", async (req, res) => {
     try {
         const reviews = await Review.find({ productId: req.params.productId });
