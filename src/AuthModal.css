@@ -12,7 +12,7 @@
 
 .modal-content {
   background: #F0EAD6; /* Crème background */
-  color: #000;        /* Black text */
+  color: #000;       /* Black text */
   padding: 20px;
   border-radius: 8px;
   width: 300px;
@@ -89,34 +89,4 @@ button:hover {
   background: #000;
   color: #F0EAD6;
   border: 1px solid #000;
-}
-
-/* 
-   .login-extra now only contains the "Remember me" label, 
-   which is centered with the checkbox side by side.
-*/
-.login-extra {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.remember-me {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* 
-   The forgot-password link is below the button in the form. 
-   We can style it to center or left-align as desired.
-*/
-.forgot-password {
-  display: block;
-  margin-top: 10px;
-  font-size: 0.9rem;
-  color: #000;
-  text-decoration: underline;
-  cursor: pointer;
 }
