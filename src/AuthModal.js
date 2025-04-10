@@ -1,45 +1,125 @@
-import React, { useState, useEffect } from "react";
+// src/AuthModal.js
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AuthModal.css";
 
-function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
+function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn }) {
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+
+  // Key for local cart in localStorage
+  const CART_STORAGE_KEY = "shopping_cart";
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isOpen) {
-      setActiveTab(defaultActiveTab);
-    }
-  }, [defaultActiveTab, isOpen]);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    alert(`Login Successful (Remember me: ${rememberMe ? "Yes" : "No"})`);
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+    setPhone("");
+    setRememberMe(false);
   };
 
-  const handleSignUp = (e) => {
+  // Merge local cart with server-side cart
+  const mergeCart = async (token) => {
+    try {
+      const localCart = localStorage.getItem(CART_STORAGE_KEY);
+      if (!localCart) return;
+
+      const parsedCart = JSON.parse(localCart);
+      const itemsToMerge = parsedCart.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+      }));
+
+      if (itemsToMerge.length > 0) {
+        const mergeResponse = await fetch("http://localhost:5001/cart/merge", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token,
+          },
+          body: JSON.stringify({ items: itemsToMerge }),
+        });
+        if (mergeResponse.ok) {
+          localStorage.removeItem(CART_STORAGE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error("Error merging cart:", error);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("http://localhost:5001/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mail_adress: email, password, rememberMe }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        alert("Login Successful");
+        setIsSignedIn(true);
+        await mergeCart(data.token);
+        resetForm();
+        onClose();
+        navigate("/shop");
+      } else {
+        console.error("Login error:", data);
+        alert(data.message || "An error occurred during login");
+      }
+    } catch (error) {
+      console.error("Error during login fetch:", error);
+      alert("An error occurred during login");
+    }
+  };
+
+  const handleSignUp = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    alert("Sign Up Successful (For testing purposes)");
-  };
+    try {
+      const response = await fetch("http://localhost:5001/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: fullName,
+          mail_adress: email,
+          password,
+          phone_number: phone,
+        }),
+      });
 
-  const handleForgotPassword = (e) => {
-    e.preventDefault();
-    onClose();         
-    navigate("/reset-password"); // Redirect to the reset-password page
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem("token", data.token);
+        alert("User registered successfully!");
+        setIsSignedIn(true);
+        await mergeCart(data.token);
+        resetForm();
+        onClose();
+        navigate("/shop");
+      } else {
+        console.error("Sign up error:", data);
+        alert(data.message || "An error occurred during sign up");
+      }
+    } catch (error) {
+      console.error("Error during sign up fetch:", error);
+      alert("An error occurred during sign up");
+    }
   };
-
-  if (!isOpen) return null;
 
   if (!isOpen) return null;
 
@@ -49,20 +129,9 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
         <span className="close-button" onClick={onClose}>
           &times;
         </span>
-
         <div className="tabs">
-          <button
-            className={activeTab === "login" ? "active login-active" : ""}
-            onClick={() => setActiveTab("login")}
-          >
-            Login
-          </button>
-          <button
-            className={activeTab === "signup" ? "active signup-active" : ""}
-            onClick={() => setActiveTab("signup")}
-          >
-            Sign Up
-          </button>
+          <button onClick={() => setActiveTab("login")}>Login</button>
+          <button onClick={() => setActiveTab("signup")}>Sign Up</button>
         </div>
 
         {activeTab === "login" ? (
@@ -81,27 +150,16 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login" }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            {/* Extra login options: "Remember me" only */}
-            <div className="login-extra">
-              <label className="remember-me">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                Remember me
-              </label>
+            <div className="remember-me">
+              <input
+                type="checkbox"
+                id="rememberMe"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <label htmlFor="rememberMe">Remember Me</label>
             </div>
             <button type="submit">Log In</button>
-
-            {/* Forgot password link beneath the button */}
-            <a
-              href="#"
-              onClick={handleForgotPassword}
-              className="forgot-password"
-            >
-              Forgot my password?
-            </a>
           </form>
         ) : (
           <form onSubmit={handleSignUp}>
