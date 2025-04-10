@@ -1,9 +1,0 @@
-/* Global app container */
-.App {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #F0EAD6; /* If you want a global background */
-  margin: 0;
-  padding: 0;
-}
