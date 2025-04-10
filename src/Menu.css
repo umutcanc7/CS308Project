@@ -1,26 +1,15 @@
-/* Menu.css */
-.menu {
+/* Hamburger icon styling */
+.hamburger-icon {
     position: fixed;
     top: 20px;
     left: 20px;
-    z-index: 1000;
-    /* Increased clickable area */
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  /* Hamburger icon styling */
-  .hamburger-icon {
+    z-index: 1100;
     width: 30px;
     height: 25px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     cursor: pointer;
-    transition: transform 0.3s ease;
   }
   
   .hamburger-icon span {
@@ -30,40 +19,47 @@
     border-radius: 2px;
   }
   
-  /* Make the hamburger icon pop out on hover */
-  .menu:hover .hamburger-icon {
-    transform: scale(1.2);
-  }
-  
-  /* Menu items panel (hidden initially) */
-  .menu-items {
-    position: absolute;
+  /* Sliding menu container */
+  .sliding-menu {
+    position: fixed;
     top: 0;
-    left: 70px; /* Positioned to the right of the enlarged hit area */
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 10px;
-    border-radius: 4px;
+    left: 0;
+    width: 20vw;      /* Approximately 1/5th of the screen width */
+    max-width: 250px; /* Fallback max width */
+    height: 100%;
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
     transform: translateX(-100%);
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    pointer-events: none;
+    transition: transform 0.3s ease;
+    z-index: 1050;
   }
   
-  /* Reveal the menu items when hovering over the menu container */
-  .menu:hover .menu-items {
+  /* When menu is open */
+  .sliding-menu.open {
     transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
   }
   
+  /* Close button styling */
+  .close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+  
+  /* Menu item styling */
   .menu-item {
+    display: block;
+    margin: 15px 0;
     color: #fff;
     text-decoration: none;
-    display: block;
-    margin: 5px 0;
+    font-size: 18px;
   }
   
   .menu-item:hover {
     text-decoration: underline;
   }
-  
