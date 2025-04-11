@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/reviews";
+const API_BASE = "http://localhost:5001/reviews";
 
 // Get all reviews for a product
 export const fetchReviews = async (productId) => {
