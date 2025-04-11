@@ -16,7 +16,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Route: POST /purchase
+// Route: POST /purchase — Record a purchase
 router.post("/", authenticateToken, async (req, res) => {
     const { productId, quantity } = req.body;
 
@@ -33,6 +33,16 @@ router.post("/", authenticateToken, async (req, res) => {
 
         await newPurchase.save();
         res.status(201).json({ success: true, message: "Purchase recorded successfully." });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ✅ NEW: GET /purchase/user — Get user's purchased products with product info
+router.get("/user", authenticateToken, async (req, res) => {
+    try {
+        const purchases = await Purchase.find({ userId: req.user.id }).populate("productId");
+        res.json({ success: true, data: purchases });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
