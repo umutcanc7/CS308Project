@@ -10,7 +10,7 @@ function PurchasedProductsPage() {
   useEffect(() => {
     const fetchPurchases = async () => {
       try {
-        const res = await fetch("http://localhost:5000/purchase/user", {
+        const res = await fetch("http://localhost:5001/purchase/user", {
           headers: {
             Authorization: "Bearer " + token,
           },
