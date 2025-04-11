@@ -1,15 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from './CartContext';
+import { recordPurchase } from './api/purchase';
 import './Cart.css';
 
 function Cart() {
-  const { cart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+  const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+
+  const handleCheckout = async () => {
+    console.log("🛒 Checkout button clicked");
+
+    if (!cart.length) {
+      alert("Cart is empty!");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please log in before checkout.");
+      return;
+    }
+
+    try {
+      let successCount = 0;
+
+      for (const item of cart) {
+        const result = await recordPurchase(item.id, item.quantity);
+        console.log("🔁 Purchase response:", result);
+
+        if (result.success) {
+          successCount++;
+        } else {
+          alert(`❌ Failed for ${item.name}: ${result.error}`);
+        }
+      }
+
+      if (successCount === cart.length) {
+        alert("✅ All items successfully purchased!");
+        clearCart();
+      } else if (successCount > 0) {
+        alert("⚠️ Some items were purchased, but others failed.");
+      }
+
+    } catch (error) {
+      console.error("Error during checkout:", error);
+      alert("Something went wrong during checkout.");
+    }
+  };
 
   return (
     <div className="cart-page">
       <h2>Your Shopping Cart</h2>
-      
+
       {cart.length === 0 ? (
         <div className="empty-cart">
           <p>Your cart is empty.</p>
@@ -19,7 +61,6 @@ function Cart() {
         </div>
       ) : (
         <>
-          {/* kolpa productlar  */}
           <div className="cart-items">
             {cart.map((item) => (
               <div key={item.id} className="cart-item">
@@ -29,14 +70,14 @@ function Cart() {
                   <p className="cart-item-price">${item.price.toFixed(2)}</p>
                 </div>
                 <div className="cart-item-quantity">
-                  <button 
+                  <button
                     onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     className="quantity-btn"
                   >
                     -
                   </button>
                   <span>{item.quantity}</span>
-                  <button 
+                  <button
                     onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="quantity-btn"
                   >
@@ -46,7 +87,7 @@ function Cart() {
                 <div className="cart-item-total">
                   ${(item.price * item.quantity).toFixed(2)}
                 </div>
-                <button 
+                <button
                   onClick={() => removeFromCart(item.id)}
                   className="remove-btn"
                 >
@@ -55,7 +96,7 @@ function Cart() {
               </div>
             ))}
           </div>
-          
+
           <div className="cart-summary">
             <div className="cart-total">
               <span>Total:</span>
@@ -65,7 +106,7 @@ function Cart() {
               <Link to="/shop" className="continue-shopping-btn">
                 Continue Shopping
               </Link>
-              <button className="checkout-btn">
+              <button className="checkout-btn" onClick={handleCheckout}>
                 Proceed to Checkout
               </button>
             </div>

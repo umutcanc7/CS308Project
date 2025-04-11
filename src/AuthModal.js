@@ -39,7 +39,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
       }));
 
       if (itemsToMerge.length > 0) {
-        const mergeResponse = await fetch("http://localhost:5001/cart/merge", {
+        const mergeResponse = await fetch("http://localhost:5000/cart/merge", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -59,7 +59,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5001/auth/login", {
+      const response = await fetch("http://localhost:5000/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mail_adress: email, password, rememberMe }),
@@ -91,7 +91,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
       return;
     }
     try {
-      const response = await fetch("http://localhost:5001/auth/register", {
+      const response = await fetch("http://localhost:5000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -1,58 +1,51 @@
+// src/Shop.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import Menu from "./Menu";
 import "./Shop.css";
 import { useCart } from "./CartContext";
-
-// Import your image files
 import heartIcon from "./assets/heart.png";
 import cartIcon from "./assets/cart.png";
-
-// Dummy product data (DELETE THIS SECTION LATER)
-const dummyProducts = [
-  {
-    id: 1,
-    name: "Classic T-Shirt",
-    price: 24.99,
-    image: "https://via.placeholder.com/150",
-    description: "A comfortable everyday t-shirt made with 100% cotton."
-  },
-  {
-    id: 2,
-    name: "Denim Jeans",
-    price: 59.99,
-    image: "https://via.placeholder.com/150",
-    description: "Classic blue denim jeans with a straight fit."
-  },
-  {
-    id: 3,
-    name: "Leather Wallet",
-    price: 34.99,
-    image: "https://via.placeholder.com/150",
-    description: "Genuine leather wallet with multiple card slots."
-  },
-  {
-    id: 4,
-    name: "Canvas Backpack",
-    price: 49.99,
-    image: "https://via.placeholder.com/150",
-    description: "Durable canvas backpack with laptop compartment."
-  }
-];
-// End of dummy product data
 
 function Shop({ openModal, isSignedIn, signOut }) {
   const { addToCart, getTotalItems } = useCart();
   const navigate = useNavigate();
-  
+
   const handleCartClick = () => {
     navigate("/cart");
   };
 
+  const handlePurchasesClick = () => {
+    navigate("/purchased-products");
+  };
+
+  const [products, setProducts] = React.useState([]);
+  const [sortOption, setSortOption] = React.useState("name_asc");
+  const [searchQuery, setSearchQuery] = React.useState("");
+
+  React.useEffect(() => {
+    const fetchSortedProducts = async () => {
+      const [sortBy, order] = sortOption.split("_");
+      try {
+        const res = await fetch(`http://localhost:5000/products/sort?by=${sortBy}&order=${order}`);
+        const data = await res.json();
+        if (data.success) setProducts(data.data);
+      } catch (err) {
+        console.error("Error fetching sorted products:", err);
+      }
+    };
+    fetchSortedProducts();
+  }, [sortOption]);
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="shop-page">
       <Menu />
-      
+
       <div className="auth-links">
         {isSignedIn ? (
           <>
@@ -63,6 +56,9 @@ function Shop({ openModal, isSignedIn, signOut }) {
                 <span className="cart-count">{getTotalItems()}</span>
               )}
             </div>
+            <button onClick={handlePurchasesClick} style={{ marginRight: "1rem" }}>
+              My Purchases
+            </button>
             <span className="signout-button" onClick={signOut}>
               Sign Out
             </span>
@@ -79,29 +75,52 @@ function Shop({ openModal, isSignedIn, signOut }) {
           </>
         )}
       </div>
-      
+
       <header className="shop-header">
         <h2>Our Collection</h2>
         <p>Discover our exclusive range of apparel and accessories.</p>
+        <div className="shop-controls">
+          <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
+            <option value="name_asc">A to Z</option>
+            <option value="name_desc">Z to A</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </header>
-      
+
       <section className="products">
-        {/* Dummy products rendering (DELETE THIS SECTION LATER) */}
-        {dummyProducts.map((product) => (
-          <div key={product.id} className="product-card">
-            <img src={product.image} alt={product.name} className="product-image" />
+        {filteredProducts.map((product) => (
+          <div key={product._id} className="product-card">
+            <img
+              src={product.image || "https://via.placeholder.com/150"}
+              alt={product.name}
+              className="product-image"
+            />
             <h3>{product.name}</h3>
             <p className="product-price">${product.price.toFixed(2)}</p>
-            <p className="product-description">{product.description}</p>
-            <button 
+            <p className="product-description">{product.category}</p>
+            <button
               className="add-to-cart-btn"
-              onClick={() => addToCart(product)}
+              onClick={() => addToCart({ ...product, id: product._id })}
             >
               Add to Cart
             </button>
+            <button
+              className="review-btn"
+              style={{ marginTop: "0.5rem" }}
+              onClick={() => navigate(`/product-reviews/${product._id}`)}
+            >
+              See Reviews
+            </button>
           </div>
         ))}
-        {/* End of dummy products rendering */}
       </section>
     </div>
   );
