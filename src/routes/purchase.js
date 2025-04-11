@@ -1,7 +1,9 @@
+// backend routes/purchase.js
 const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const Purchase = require("../models/Purchase");
+const Cart = require("../models/Cart"); // Import the Cart model
 
 // Token middleware
 function authenticateToken(req, res, next) {
@@ -16,7 +18,7 @@ function authenticateToken(req, res, next) {
     });
 }
 
-// Route: POST /purchase — Record a purchase
+// POST /purchase — Record a purchase and remove purchased item from the cart
 router.post("/", authenticateToken, async (req, res) => {
     const { productId, quantity } = req.body;
 
@@ -25,6 +27,7 @@ router.post("/", authenticateToken, async (req, res) => {
     }
 
     try {
+        // Create and save the purchase record
         const newPurchase = new Purchase({
             userId: req.user.id,
             productId,
@@ -32,7 +35,14 @@ router.post("/", authenticateToken, async (req, res) => {
         });
 
         await newPurchase.save();
-        res.status(201).json({ success: true, message: "Purchase recorded successfully." });
+
+        // Remove the purchased item from the user's cart
+        await Cart.findOneAndDelete({ userId: req.user.id, productId });
+
+        res.status(201).json({ 
+            success: true, 
+            message: "Purchase recorded and item removed from cart successfully." 
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
