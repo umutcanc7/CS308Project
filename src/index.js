@@ -30,6 +30,9 @@ app.use("/reviews", reviewRoutes); // ✅ /reviews altında kullanılsın
 const cartRoutes = require("./routes/cart"); // ✅ sepet router'ını dahil et
 app.use("/cart", cartRoutes); // ✅ /cart altında kullanılsın
 
+const purchaseRoutes = require("./routes/purchase");
+app.use("/purchase", purchaseRoutes);
+
 // Routes for frontend pages
 app.get("/", (req, res) => {
     res.render("login"); // Default page
@@ -47,8 +50,4 @@ app.get("/signup", (req, res) => {
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
     console.log(`🚀 Server running on Port: ${port}`);
-
-const purchaseRoutes = require("./routes/purchase");
-app.use("/purchase", purchaseRoutes);
-
 });
