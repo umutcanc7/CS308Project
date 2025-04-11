@@ -1,6 +1,7 @@
 // src/AuthModal.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "./CartContext"; // Import refreshCart from cart context
 import "./AuthModal.css";
 
 function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn }) {
@@ -12,9 +13,10 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
   const [phone, setPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
+  const { refreshCart } = useCart(); // used to load backend cart after merging
+
   // Key for local cart in localStorage
   const CART_STORAGE_KEY = "shopping_cart";
-
   const navigate = useNavigate();
 
   const resetForm = () => {
@@ -26,7 +28,9 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
     setRememberMe(false);
   };
 
-  // Merge local cart with server-side cart
+  // Merge local cart with server-side cart.
+  // This function takes the locally stored cart items and sends them to the backend.
+  // The backend merge endpoint already checks if an item exists and adds the quantities if needed.
   const mergeCart = async (token) => {
     try {
       const localCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -39,7 +43,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
       }));
 
       if (itemsToMerge.length > 0) {
-        const mergeResponse = await fetch("http://localhost:5000/cart/merge", {
+        const mergeResponse = await fetch("http://localhost:5001/cart/merge", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -59,7 +63,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/auth/login", {
+      const response = await fetch("http://localhost:5001/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mail_adress: email, password, rememberMe }),
@@ -71,6 +75,8 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
         alert("Login Successful");
         setIsSignedIn(true);
         await mergeCart(data.token);
+        // Refresh the cart to load the backend (merged) cart data
+        await refreshCart();
         resetForm();
         onClose();
         navigate("/shop");
@@ -91,7 +97,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
       return;
     }
     try {
-      const response = await fetch("http://localhost:5000/auth/register", {
+      const response = await fetch("http://localhost:5001/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -108,6 +114,8 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
         alert("User registered successfully!");
         setIsSignedIn(true);
         await mergeCart(data.token);
+        // Refresh the cart so that the backend cart is loaded, even if local cart was empty
+        await refreshCart();
         resetForm();
         onClose();
         navigate("/shop");

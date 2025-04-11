@@ -8,7 +8,7 @@ import heartIcon from "./assets/heart.png";
 import cartIcon from "./assets/cart.png";
 
 function Shop({ openModal, isSignedIn, signOut }) {
-  const { addToCart, getTotalItems } = useCart();
+  const { addToCart, getTotalItems, clearCart } = useCart();
   const navigate = useNavigate();
 
   const handleCartClick = () => {
@@ -27,7 +27,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
     const fetchSortedProducts = async () => {
       const [sortBy, order] = sortOption.split("_");
       try {
-        const res = await fetch(`http://localhost:5000/products/sort?by=${sortBy}&order=${order}`);
+        const res = await fetch(`http://localhost:5001/products/sort?by=${sortBy}&order=${order}`);
         const data = await res.json();
         if (data.success) setProducts(data.data);
       } catch (err) {
@@ -59,7 +59,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
             <button onClick={handlePurchasesClick} style={{ marginRight: "1rem" }}>
               My Purchases
             </button>
-            <span className="signout-button" onClick={signOut}>
+            <span className="signout-button" onClick={() => { signOut(); clearCart(); }}>
               Sign Out
             </span>
           </>

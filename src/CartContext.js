@@ -1,18 +1,21 @@
+// src/CartContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CART_STORAGE_KEY = 'shopping_cart';
 const CartContext = createContext();
 
-const API_URL = 'http://localhost:5000/cart';
+const API_URL = 'http://localhost:5001/cart';
 
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  // If not logged in, load the initial cart from localStorage.
+  const initialToken = localStorage.getItem("token");
+  const initialCart = initialToken ? [] : JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
+  const [cart, setCart] = useState(initialCart);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const token = localStorage.getItem("token");
-
-  // Load cart from backend
+  // Function to load cart from the backend when logged in.
   const loadCartFromBackend = async () => {
+    const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
@@ -43,20 +46,53 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Load cart when logged in
-  useEffect(() => {
-    loadCartFromBackend().finally(() => setIsInitialized(true));
-  }, [token]);
+  // Expose refreshCart to be called from other components (e.g., AuthModal)
+  const refreshCart = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      await loadCartFromBackend();
+    } else {
+      const localCartData = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
+      setCart(localCartData);
+    }
+  };
 
-  // Save to localStorage for persistence
+  // On mount, if the user is logged in, load the cart from the backend.
   useEffect(() => {
-    if (isInitialized) {
+    const token = localStorage.getItem("token");
+    if (token) {
+      loadCartFromBackend().finally(() => setIsInitialized(true));
+    } else {
+      setIsInitialized(true);
+    }
+  }, []);
+
+  // Save to localStorage for persistence when not logged in.
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }
-  }, [cart, isInitialized]);
+  }, [cart]);
 
   const addToCart = async (product) => {
     if (!product || !product.id) return;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // Update local cart state when not logged in.
+      setCart(prevCart => {
+         const existing = prevCart.find(item => item.id === product.id);
+         if (existing) {
+           return prevCart.map(item =>
+              item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+           );
+         } else {
+           return [...prevCart, { ...product, quantity: 1 }];
+         }
+      });
+      return;
+    }
 
     try {
       const response = await fetch(`${API_URL}/add`, {
@@ -80,6 +116,12 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (productId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCart(prevCart => prevCart.filter(item => item.id !== productId));
+      return;
+    }
+
     try {
       const response = await fetch(`${API_URL}/${productId}`, {
         method: "DELETE",
@@ -89,7 +131,7 @@ export const CartProvider = ({ children }) => {
       });
 
       if (response.ok) {
-        setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+        setCart(prevCart => prevCart.filter(item => item.id !== productId));
       } else {
         console.error("Failed to remove item from backend cart");
       }
@@ -100,6 +142,15 @@ export const CartProvider = ({ children }) => {
 
   const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return removeFromCart(productId);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCart(prevCart =>
+         prevCart.map(item =>
+            item.id === productId ? { ...item, quantity: newQuantity } : item
+         )
+      );
+      return;
+    }
 
     try {
       await fetch(`${API_URL}/add`, {
@@ -111,10 +162,10 @@ export const CartProvider = ({ children }) => {
         body: JSON.stringify({ productId, quantity: newQuantity }),
       });
 
-      setCart((prevCart) =>
-        prevCart.map((item) =>
-          item.id === productId ? { ...item, quantity: newQuantity } : item
-        )
+      setCart(prevCart =>
+         prevCart.map(item =>
+            item.id === productId ? { ...item, quantity: newQuantity } : item
+         )
       );
     } catch (error) {
       console.error("Error updating quantity:", error);
@@ -142,6 +193,7 @@ export const CartProvider = ({ children }) => {
         getTotalItems,
         getTotalPrice,
         clearCart,
+        refreshCart,
       }}
     >
       {children}
