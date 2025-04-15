@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Menu from "./Menu";
 import logo from "./assets/logo.png";
+import collection1 from "./assets/collection1.jpg";
+import collection2 from "./assets/collection2.jpg";
+import asset2 from "./assets/asset2.jpg";
 import "./Home.css";
 
 function Home({ openModal }) {
@@ -51,9 +54,8 @@ function Home({ openModal }) {
           </div>
           <div className="hero-images">
             <div className="image-slider">
-              {/* Add your hero images here */}
-              <img src="https://via.placeholder.com/400x500" alt="Collection preview 1" />
-              <img src="https://via.placeholder.com/400x500" alt="Collection preview 2" />
+              <img src={collection1} alt="Collection preview 1" />
+              <img src={collection2} alt="Collection preview 2" />
             </div>
             <div className="slider-controls">
               <button className="prev">←</button>
@@ -67,9 +69,6 @@ function Home({ openModal }) {
           <div className="section-header">
             <h2>NEW<br />THIS WEEK</h2>
             <span className="product-count">(50)</span>
-            <button onClick={() => navigate('/shop')} className="see-all">
-              See All
-            </button>
           </div>
 
           <div className="product-grid">
@@ -80,7 +79,7 @@ function Home({ openModal }) {
                 onClick={() => navigate(`/product/${product._id}`)}
               >
                 <div className="product-image">
-                  <img src={product.image || 'https://via.placeholder.com/300'} alt={product.name} />
+                  <img src={asset2} alt={product.name} />
                 </div>
                 <div className="product-info">
                   <div className="product-type">{product.category}</div>

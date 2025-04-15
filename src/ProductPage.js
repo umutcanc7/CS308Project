@@ -5,6 +5,7 @@ import Menu from './Menu';
 import './ProductPage.css';
 import heartIcon from './assets/heart.png';
 import cartIcon from './assets/cart.png';
+import asset2 from './assets/asset2.jpg';
 
 function ProductPage({ openModal, isSignedIn, signOut }) {
   const { productId } = useParams();
@@ -50,11 +51,11 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2X'];
   const colors = ['#E5E5E5', '#999999', '#000000', '#A8D9D5', '#C7C7F9'];
   const productImages = [
-    product.image,
-    product.image, // You can add more image variations here
-    product.image,
-    product.image,
-    product.image,
+    asset2,
+    asset2,
+    asset2,
+    asset2,
+    asset2,
   ];
 
   const handleCartClick = () => {
@@ -68,7 +69,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
       <div className="product-layout">
         <div className="product-gallery">
           <div className="main-image">
-            <img src={productImages[mainImage]} alt={product.name} />
+            <img src={asset2} alt={product.name} />
           </div>
           <div className="thumbnail-list">
             {productImages.map((img, index) => (
@@ -77,7 +78,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
                 className={`thumbnail ${mainImage === index ? 'active' : ''}`}
                 onClick={() => setMainImage(index)}
               >
-                <img src={img} alt={`${product.name} view ${index + 1}`} />
+                <img src={asset2} alt={`${product.name} view ${index + 1}`} />
               </div>
             ))}
           </div>

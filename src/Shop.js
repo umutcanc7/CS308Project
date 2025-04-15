@@ -6,6 +6,7 @@ import "./Shop.css";
 import { useCart } from "./CartContext";
 import heartIcon from "./assets/heart.png";
 import cartIcon from "./assets/cart.png";
+import asset2 from "./assets/asset2.jpg";
 
 function Shop({ openModal, isSignedIn, signOut }) {
   const { addToCart, getTotalItems, clearCart } = useCart();
@@ -104,7 +105,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
               style={{ cursor: 'pointer' }}
             >
               <img
-                src={product.image || "https://via.placeholder.com/150"}
+                src={asset2}
                 alt={product.name}
                 className="product-image"
               />
