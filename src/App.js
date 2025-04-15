@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PurchasedProductsPage from "./PurchasedProductsPage";
 import ProductReviewsPage from "./ProductReviewsPage";
+import ProductPage from "./ProductPage";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./App.css";
 import AuthModal from "./AuthModal";
@@ -55,6 +56,7 @@ function App() {
           <Route path="/home" element={<Home openModal={openModal} />} />
           <Route path="/purchased-products" element={<PurchasedProductsPage />} />
           <Route path="/product-reviews/:productId" element={<ProductReviewsPage />} />
+          <Route path="/product/:productId" element={<ProductPage openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />} />
           <Route
             path="/shop"
             element={

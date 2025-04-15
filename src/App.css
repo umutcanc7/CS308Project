@@ -1,9 +1,17 @@
 /* Global app container */
 .App {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #F0EAD6; /* If you want a global background */
   margin: 0;
   padding: 0;
+}
+
+/* Ensure the root element and body also have the background color */
+:root, body {
+  margin: 0;
+  padding: 0;
+  background-color: #F0EAD6;
+  min-height: 100vh;
 }

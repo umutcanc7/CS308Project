@@ -98,12 +98,23 @@ function Shop({ openModal, isSignedIn, signOut }) {
       <section className="products">
         {filteredProducts.map((product) => (
           <div key={product._id} className="product-card">
-            <img
-              src={product.image || "https://via.placeholder.com/150"}
-              alt={product.name}
-              className="product-image"
-            />
-            <h3>{product.name}</h3>
+            <div 
+              className="product-image-container"
+              onClick={() => navigate(`/product/${product._id}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              <img
+                src={product.image || "https://via.placeholder.com/150"}
+                alt={product.name}
+                className="product-image"
+              />
+            </div>
+            <h3 
+              onClick={() => navigate(`/product/${product._id}`)}
+              style={{ cursor: 'pointer' }}
+            >
+              {product.name}
+            </h3>
             <p className="product-price">${product.price.toFixed(2)}</p>
             <p className="product-description">{product.category}</p>
             <button
