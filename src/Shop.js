@@ -123,13 +123,6 @@ function Shop({ openModal, isSignedIn, signOut }) {
             >
               Add to Cart
             </button>
-            <button
-              className="review-btn"
-              style={{ marginTop: "0.5rem" }}
-              onClick={() => navigate(`/product-reviews/${product._id}`)}
-            >
-              See Reviews
-            </button>
           </div>
         ))}
       </section>

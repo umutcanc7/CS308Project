@@ -28,7 +28,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
         console.error('Error:', error);
       });
 
-    // Fetch reviews
     fetch(`http://localhost:5001/reviews/${productId}`)
       .then(res => res.json())
       .then(data => {
@@ -47,14 +46,22 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
     return <div className="loading">Loading...</div>;
   }
 
+  // ✅ Fotoğrafı güvenli şekilde getiren fonksiyon
+  const getImage = (imageName) => {
+    try {
+      return require(`./assets/${imageName}`);
+    } catch {
+      return // varsayılan fotoğraf
+    }
+  };
+
   const sizes = ['XS', 'S', 'M', 'L', 'XL', '2X'];
   const colors = ['#E5E5E5', '#999999', '#000000', '#A8D9D5', '#C7C7F9'];
+
   const productImages = [
-    product.image,
-    product.image, // You can add more image variations here
-    product.image,
-    product.image,
-    product.image,
+    getImage(product.image),
+    getImage(product.image),
+    getImage(product.image)
   ];
 
   const handleCartClick = () => {
@@ -87,7 +94,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           <h1>{product.name.toUpperCase()}</h1>
           <div className="price">${product.price.toFixed(2)}</div>
           <div className="tax-info">MRP incl. of all taxes</div>
-
           <p className="description">{product.description}</p>
 
           <div className="options-section">
@@ -179,10 +185,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
                 <span className="cart-count">{getTotalItems()}</span>
               )}
             </div>
-            <span 
-              onClick={() => navigate('/purchased-products')} 
-              style={{ cursor: 'pointer' }}
-            >
+            <span onClick={() => navigate('/purchased-products')} style={{ cursor: 'pointer' }}>
               My Purchases
             </span>
             <span className="signout-button" onClick={signOut}>
@@ -205,4 +208,4 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   );
 }
 
-export default ProductPage; 
+export default ProductPage;
