@@ -6,7 +6,8 @@ const ProductSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   color: { type: String },
   category: { type: String },
-  averageRating: { type: Number, default: 0 }  // ⭐ Ortalama puan alanı
+  averageRating: { type: Number, default: 0 },  // ⭐ Ortalama puan alanı
+  image: { type: String } 
 });
 
 module.exports = mongoose.model("Product", ProductSchema);
