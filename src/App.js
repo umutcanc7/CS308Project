@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect } from "react";
 import PurchasedProductsPage from "./PurchasedProductsPage";
 import ProductReviewsPage from "./ProductReviewsPage";
@@ -63,7 +64,8 @@ function App() {
               <Shop openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />
             }
           />
-          <Route path="/cart" element={<Cart />} />
+          {/* Updated /cart route */}
+          <Route path="/cart" element={<Cart openModal={openModal} />} />
         </Routes>
         
         <AuthModal
