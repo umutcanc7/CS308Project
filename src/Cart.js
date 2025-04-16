@@ -19,9 +19,11 @@ function Cart({ openModal }) {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in before checkout.");
-      if (openModal) {
-        openModal("login");
-      }
+      setTimeout(() => {
+        if (openModal) {
+          openModal("login");
+        }
+      }, 100);
       return;
     }
 
