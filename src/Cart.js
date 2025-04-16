@@ -2,10 +2,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from './CartContext';
-import { recordPurchase } from './api/purchase';
+import { checkoutCart } from './api/purchase'; // New function for checkout
 import './Cart.css';
 
-function Cart() {
+function Cart({ openModal }) {
   const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
 
   const handleCheckout = async () => {
@@ -19,30 +19,23 @@ function Cart() {
     const token = localStorage.getItem("token");
     if (!token) {
       alert("Please log in before checkout.");
+      if (openModal) {
+        openModal("login");
+      }
       return;
     }
 
     try {
-      let successCount = 0;
+      // Call checkoutCart with the entire cart array.
+      const result = await checkoutCart(cart);
+      console.log("🔁 Checkout response:", result);
 
-      for (const item of cart) {
-        const result = await recordPurchase(item.id, item.quantity);
-        console.log("🔁 Purchase response:", result);
-
-        if (result.success) {
-          successCount++;
-        } else {
-          alert(`❌ Failed for ${item.name}: ${result.error}`);
-        }
-      }
-
-      if (successCount === cart.length) {
-        alert("✅ All items successfully purchased!");
+      if (result.success) {
+        alert("✅ Purchase successful!\nReceipt has been emailed.");
         clearCart();
-      } else if (successCount > 0) {
-        alert("⚠️ Some items were purchased, but others failed.");
+      } else {
+        alert("❌ Some items failed: " + result.error);
       }
-
     } catch (error) {
       console.error("Error during checkout:", error);
       alert("Something went wrong during checkout.");
@@ -52,7 +45,6 @@ function Cart() {
   return (
     <div className="cart-page">
       <h2>Your Shopping Cart</h2>
-
       {cart.length === 0 ? (
         <div className="empty-cart">
           <p>Your cart is empty.</p>
@@ -71,27 +63,18 @@ function Cart() {
                   <p className="cart-item-price">${item.price.toFixed(2)}</p>
                 </div>
                 <div className="cart-item-quantity">
-                  <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="quantity-btn"
-                  >
+                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="quantity-btn">
                     -
                   </button>
                   <span>{item.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="quantity-btn"
-                  >
+                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="quantity-btn">
                     +
                   </button>
                 </div>
                 <div className="cart-item-total">
                   ${(item.price * item.quantity).toFixed(2)}
                 </div>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="remove-btn"
-                >
+                <button onClick={() => removeFromCart(item.id)} className="remove-btn">
                   Remove
                 </button>
               </div>
