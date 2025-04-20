@@ -140,8 +140,9 @@ function Shop({ openModal, isSignedIn, signOut }) {
             <button
               className="add-to-cart-btn"
               onClick={() => addToCart({ ...product, id: product._id })}
+              disabled={product.stock < 1}
             >
-              Add to Cart
+              {product.stock < 1 ? 'OUT OF STOCK' : 'Add to Cart'}
             </button>
           </div>
         ))}

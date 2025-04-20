@@ -29,7 +29,7 @@
 .products {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 24px;
   flex-wrap: wrap;
   padding-bottom: 120px; /* Ensures space at the bottom like SafeArea */
 }
@@ -41,15 +41,18 @@
   padding: 8px;
   border-radius: 8px;
   width: 220px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 1;
 }
 
 .product-card:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 2;
 }
 
 .product-image-container {
@@ -97,6 +100,15 @@
 
 .add-to-cart-btn:hover {
   background: #333;
+}
+
+.add-to-cart-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.add-to-cart-btn:disabled:hover {
+  background: #cccccc;
 }
 
 .review-btn {
