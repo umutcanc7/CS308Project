@@ -4,6 +4,9 @@
 .shop-page {
   padding: 70px 20px 20px;
   text-align: center;
+  height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 /* Shop header styles */
@@ -28,6 +31,7 @@
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+  padding-bottom: 120px; /* Ensures space at the bottom like SafeArea */
 }
 
 /* Product card styling */
@@ -146,4 +150,24 @@
   color: #000;
   font-size: 18px;
   cursor: pointer;
+}
+
+/* Sort and search controls */
+.shop-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 20px;
+}
+.shop-controls select {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+.shop-controls input {
+  width: 160px;
+  max-width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }

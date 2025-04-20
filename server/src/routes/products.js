@@ -2,9 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Product = require("../models/Product");
 
-// Yeni ürün ekleme (POST /products/add)
+// product.js (not full code, just the change)
 router.post("/add", async (req, res) => {
-    const { product_id, name, price, color, category } = req.body;
+    const { product_id, name, price, color, category, stock, description } = req.body;
 
     if (!product_id || !name || !price || !category) {
         return res.status(400).json({ success: false, error: "product_id, name, price ve category zorunludur." });
@@ -16,7 +16,16 @@ router.post("/add", async (req, res) => {
             return res.status(400).json({ success: false, error: "Bu ID ile bir ürün zaten var." });
         }
 
-        const newProduct = new Product({ product_id, name, price, color, category });
+        const newProduct = new Product({
+            product_id,
+            name,
+            price,
+            color,
+            category,
+            stock,
+            description
+        });
+
         await newProduct.save();
         res.status(201).json({ success: true, message: "Ürün başarıyla eklendi." });
     } catch (error) {
@@ -48,7 +57,10 @@ router.get("/sort", async (req, res) => {
     const sortOrder = order === "desc" ? -1 : 1;
 
     if (!sortBy) {
-        return res.status(400).json({ success: false, error: "Geçerli bir sıralama kriteri girin (name, price, rating)" });
+        return res.status(400).json({
+            success: false,
+            error: "Geçerli bir sıralama kriteri girin (name, price, rating)"
+        });
     }
 
     try {
@@ -59,8 +71,6 @@ router.get("/sort", async (req, res) => {
     }
 });
 
-
-// Ürün arama (GET /products/search?query=deger)
 // Ürün arama (GET /products/search?query=deger)
 router.get("/search", async (req, res) => {
     const query = req.query.query;
@@ -79,7 +89,7 @@ router.get("/search", async (req, res) => {
             ]
         });
 
-        console.log("✅ Bulunan ürün sayisi:", results.length);
+        console.log("✅ Bulunan ürün sayısı:", results.length);
         res.json({ success: true, data: results });
     } catch (error) {
         console.error("❌ Hata:", error.message);
@@ -87,5 +97,13 @@ router.get("/search", async (req, res) => {
     }
 });
 
+router.get("/categories", async (req, res) => {
+    try {
+      const categories = await Product.distinct("category");
+      res.json({ success: true, data: categories });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 module.exports = router;
