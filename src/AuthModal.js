@@ -1,6 +1,6 @@
-// src/AuthModal.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "./CartContext"; // Import refreshCart from cart context
 import "./AuthModal.css";
 
 function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn }) {
@@ -12,9 +12,10 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
   const [phone, setPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
+  const { refreshCart } = useCart(); // used to load backend cart after merging
+
   // Key for local cart in localStorage
   const CART_STORAGE_KEY = "shopping_cart";
-
   const navigate = useNavigate();
 
   const resetForm = () => {
@@ -26,7 +27,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
     setRememberMe(false);
   };
 
-  // Merge local cart with server-side cart
+  // Merge local cart with server-side cart.
   const mergeCart = async (token) => {
     try {
       const localCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -71,6 +72,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
         alert("Login Successful");
         setIsSignedIn(true);
         await mergeCart(data.token);
+        await refreshCart();
         resetForm();
         onClose();
         navigate("/shop");
@@ -108,6 +110,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
         alert("User registered successfully!");
         setIsSignedIn(true);
         await mergeCart(data.token);
+        await refreshCart();
         resetForm();
         onClose();
         navigate("/shop");

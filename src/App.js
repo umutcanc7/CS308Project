@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
+import PurchasedProductsPage from "./PurchasedProductsPage";
+import ProductReviewsPage from "./ProductReviewsPage";
+import ProductPage from "./ProductPage";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./App.css";
 import AuthModal from "./AuthModal";
 import Home from "./Home";
 import Shop from "./Shop";
 import Cart from "./Cart";
+import ReviewPage from "./ReviewPage";
 import { CartProvider } from "./CartContext";
+import CreditCardForm from "./CreditCardForm";  // CreditCardForm bileşenini import ettik
 
 function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -47,8 +52,12 @@ function App() {
     <CartProvider>
       <div className="App">
         <Routes>
+          <Route path="/review/:productId" element={<ReviewPage />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/home" element={<Home openModal={openModal} />} />
+          <Route path="/purchased-products" element={<PurchasedProductsPage />} />
+          <Route path="/product-reviews/:productId" element={<ProductReviewsPage />} />
+          <Route path="/product/:productId" element={<ProductPage openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />} />
           <Route
             path="/shop"
             element={
@@ -56,6 +65,7 @@ function App() {
             }
           />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/credit-card-form" element={<CreditCardForm />} />  {/* Yeni route eklendi */}
         </Routes>
         
         <AuthModal
