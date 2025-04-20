@@ -6,7 +6,6 @@ import Menu from './Menu';
 import './ProductPage.css';
 import heartIcon from './assets/heart.png';
 import cartIcon from './assets/cart.png';
-import asset2 from './assets/asset2.jpg';
 
 function ProductPage({ openModal, isSignedIn, signOut }) {
   const { productId } = useParams();
@@ -32,7 +31,20 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   const product = products.find(p => p._id === productId);
   if (!product) return <div className="loading">Loading...</div>;
 
-  const productImages = [asset2, asset2, asset2]; // Now only 3 images
+  const getImage = (imageName) => {
+    try {
+      return require(`./assets/${imageName}`);
+    } catch {
+      // Eğer resim bulunamazsa varsayılan bir resim göster
+      return require('./assets/logo.png');
+    }
+  };
+
+  const productImages = [
+    getImage(product.image1),
+    getImage(product.image2),
+    getImage(product.image3)
+  ];
 
   const handleCartClick = () => navigate('/cart');
   const toggleWishlist = () => setWishlisted(!isWishlisted);

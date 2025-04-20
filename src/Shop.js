@@ -18,6 +18,14 @@ function Shop({ openModal, isSignedIn, signOut }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
+  const getImage = (imageName) => {
+    try {
+      return require(`./assets/${imageName}`);
+    } catch {
+      return require('./assets/logo.png');
+    }
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       const [sortBy, order] = sortOption.split("_");
@@ -130,7 +138,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
               onClick={() => navigate(`/product/${product._id}`)}
               style={{ cursor: "pointer" }}
             >
-              <img src={asset2} alt={product.name} className="product-image" />
+              <img src={getImage(product.image1)} alt={product.name} className="product-image" />
             </div>
             <h3 onClick={() => navigate(`/product/${product._id}`)} style={{ cursor: "pointer" }}>
               {product.name}
