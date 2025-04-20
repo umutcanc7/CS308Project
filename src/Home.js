@@ -38,8 +38,8 @@ function Home({ openModal }) {
       {/* New Collection Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1>NEW<br/>COLLECTION</h1>
-          <p>Summer<br/>2024</p>
+          <h1>NEW<br/>PRODUCT</h1>
+          <p>Spring<br/>2025</p>
           <button onClick={() => navigate('/shop')} className="go-to-shop">
             Go To Shop <span className="arrow">→</span>
           </button>
