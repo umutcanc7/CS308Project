@@ -37,6 +37,10 @@ app.use('/cart', cartRoutes); // /cart altında kullanılsın
 const purchaseRoutes = require('./routes/purchase'); // Satın alma router'ını dahil et
 app.use('/purchase', purchaseRoutes);
 
+const userRoutes = require("./routes/user");
+app.use("/user", userRoutes);
+
+
 // Routes for frontend pages
 app.get('/', (req, res) => {
     res.render('login'); // Default page
