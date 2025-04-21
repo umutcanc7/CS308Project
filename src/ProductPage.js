@@ -6,6 +6,7 @@ import Menu from './Menu';
 import './ProductPage.css';
 import heartIcon from './assets/heart.png';
 import cartIcon from './assets/cart.png';
+import profileIcon from './assets/profile.svg';
 
 function ProductPage({ openModal, isSignedIn, signOut }) {
   const { productId } = useParams();
@@ -143,7 +144,18 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
               {isWishlisted ? "♥ Remove from Wishlist" : "♡ Add to Wishlist"}
             </button>
           ) : (
-            <p className="wishlist-login-text">You must login first to use wishlist</p>
+            <p
+              className="wishlist-login-text"
+              style={{
+                color: "#d00",
+                fontWeight: "bold",
+                cursor: "pointer",
+                marginBottom: "10px",
+              }}
+              onClick={() => openModal("login")}
+            >
+              🔒 Login to add to wishlist
+            </p>
           )}
 
           <p className="description">{product.description}</p>
@@ -208,6 +220,13 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
                 <span className="cart-count">{getTotalItems()}</span>
               )}
             </div>
+            <img
+              src={profileIcon}
+              alt="Profile"
+              className="icon"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/profile")}
+            />
             <span onClick={() => navigate('/purchased-products')}>
               My Purchases
             </span>

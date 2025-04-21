@@ -6,6 +6,7 @@ import "./Shop.css";
 import { useCart } from "./CartContext";
 import heartIcon from "./assets/heart.png";
 import cartIcon from "./assets/cart.png";
+import profileIcon from "./assets/profile.svg";
 
 function Shop({ openModal, isSignedIn, signOut }) {
   const { addToCart, getTotalItems, clearCart } = useCart();
@@ -65,6 +66,13 @@ function Shop({ openModal, isSignedIn, signOut }) {
               <img src={cartIcon} alt="Cart" className="icon" />
               {getTotalItems() > 0 && <span className="cart-count">{getTotalItems()}</span>}
             </div>
+            <img
+              src={profileIcon}
+              alt="Profile"
+              className="icon"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/profile")}
+            />
             <span className="auth-button" onClick={() => navigate("/purchased-products")}>
               My Purchases
             </span>
@@ -76,6 +84,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
           <>
             <div className="cart-icon-container" onClick={() => navigate("/cart")}>
               <img src={cartIcon} alt="Cart" className="icon" />
+              {getTotalItems() > 0 && <span className="cart-count">{getTotalItems()}</span>}
             </div>
             <span onClick={() => openModal("login")}>Login/Sign Up</span>
           </>
