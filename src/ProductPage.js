@@ -26,10 +26,25 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
       .then(res => res.json())
       .then(data => data.success && setReviews(data.data))
       .catch(console.error);
-  }, [productId]);
 
-  const product = products.find(p => p._id === productId);
-  if (!product) return <div className="loading">Loading...</div>;
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetch("http://localhost:5001/wishlist", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            const exists = data.data.some(item => {
+              const id = item.productId?._id || item.productId;
+              return String(id) === String(productId);
+            });
+            setWishlisted(exists);
+          }
+        })
+        .catch(console.error);
+    }
+  }, [productId]);
 
   const getImage = (imageName) => {
     try {
@@ -39,6 +54,9 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
     }
   };
 
+  const product = products.find(p => p._id === productId);
+  if (!product) return <div className="loading">Loading...</div>;
+
   const productImages = [
     getImage(product.image1),
     getImage(product.image2),
@@ -46,10 +64,48 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   ];
 
   const handleCartClick = () => navigate('/cart');
-  const toggleWishlist = () => {
-    if (isSignedIn) {
-      setWishlisted(!isWishlisted);
-      // Optionally send to backend
+
+  const toggleWishlist = async () => {
+    if (!isSignedIn) return;
+
+    const token = localStorage.getItem("token");
+
+    if (!isWishlisted) {
+      try {
+        const res = await fetch("http://localhost:5001/wishlist/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ productId }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          setWishlisted(true);
+          console.log("✅ Added to wishlist");
+        } else {
+          alert(`❌ ${data.message}`);
+        }
+      } catch (err) {
+        console.error("Failed to add to wishlist:", err);
+      }
+    } else {
+      try {
+        const res = await fetch(`http://localhost:5001/wishlist/${productId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setWishlisted(false);
+          console.log("✅ Removed from wishlist");
+        } else {
+          alert(`❌ ${data.message}`);
+        }
+      } catch (err) {
+        console.error("Failed to remove from wishlist:", err);
+      }
     }
   };
 
@@ -80,8 +136,11 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           <div className="price">${product.price.toFixed(2)}</div>
 
           {isSignedIn ? (
-            <button className="wishlist-button" onClick={toggleWishlist}>
-              {isWishlisted ? '♥ Remove from Wishlist' : '♡ Add to Wishlist'}
+            <button
+              className={`wishlist-btn ${isWishlisted ? "hearted" : "unhearted"}`}
+              onClick={toggleWishlist}
+            >
+              {isWishlisted ? "♥ Remove from Wishlist" : "♡ Add to Wishlist"}
             </button>
           ) : (
             <p className="wishlist-login-text">You must login first to use wishlist</p>
@@ -136,7 +195,13 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
       <div className="auth-links">
         {isSignedIn ? (
           <>
-            <img src={heartIcon} alt="Favorites" className="icon" />
+            <img
+              src={heartIcon}
+              alt="Wishlist"
+              className="icon"
+              style={{ cursor: "pointer" }}
+              onClick={() => navigate("/wishlist")}
+            />
             <div className="cart-icon-container" onClick={handleCartClick}>
               <img src={cartIcon} alt="Cart" className="icon" />
               {getTotalItems() > 0 && (

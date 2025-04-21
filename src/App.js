@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import PurchasedProductsPage from "./PurchasedProductsPage";
 import ProductReviewsPage from "./ProductReviewsPage";
 import ProductPage from "./ProductPage";
+import WishlistPage from "./WishlistPage";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import "./App.css";
 import AuthModal from "./AuthModal";
@@ -18,14 +19,14 @@ function App() {
   // Initialize authentication state based on token presence
   const [isSignedIn, setIsSignedIn] = useState(false);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       setIsSignedIn(true);
     }
   }, []);
-  
+
   // Listen for local storage changes across tabs (e.g. sign out)
   useEffect(() => {
     const handleStorageChange = (event) => {
@@ -36,18 +37,18 @@ function App() {
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
-  
+
   const openModal = (tab) => {
     setModalTab(tab);
     setIsModalOpen(true);
   };
-  
+
   const signOut = () => {
     localStorage.removeItem("token");
     setIsSignedIn(false);
     navigate("/home");
   };
-  
+
   return (
     <CartProvider>
       <div className="App">
@@ -65,9 +66,10 @@ function App() {
             }
           />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/credit-card-form" element={<CreditCardForm />} />  {/* Yeni route eklendi */}
         </Routes>
-        
+
         <AuthModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

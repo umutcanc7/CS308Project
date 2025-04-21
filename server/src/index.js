@@ -50,7 +50,8 @@ app.get('/signup', (req, res) => {
     res.render('signup'); // Renders signup.ejs
 });
 
-
+const wishlistRoutes = require("./routes/wishlist");
+app.use("/wishlist", wishlistRoutes);
 
 // Start server
 const port = process.env.PORT || 5001;
