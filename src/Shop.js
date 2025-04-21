@@ -4,9 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Menu from "./Menu";
 import "./Shop.css";
 import { useCart } from "./CartContext";
-import heartIcon from "./assets/heart.png";
-import cartIcon from "./assets/cart.png";
-import profileIcon from "./assets/profile.svg";
 
 function Shop({ openModal, isSignedIn, signOut }) {
   const { addToCart, getTotalItems, clearCart } = useCart();
@@ -43,7 +40,8 @@ function Shop({ openModal, isSignedIn, signOut }) {
 
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase();
-    const matchSearch = p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+    const matchSearch =
+      p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
     const matchCat = selectedCategory === "All" || p.category === selectedCategory;
     return matchSearch && matchCat;
   });
@@ -52,41 +50,38 @@ function Shop({ openModal, isSignedIn, signOut }) {
     <div className="shop-page">
       <Menu />
 
+      {/* Sidebar with emoji text buttons only */}
       <div className="auth-links">
         {isSignedIn ? (
           <>
-            <img
-              src={heartIcon}
-              alt="Wishlist"
-              className="icon"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/wishlist")}
-            />
-            <div className="cart-icon-container" onClick={() => navigate("/cart")}>
-              <img src={cartIcon} alt="Cart" className="icon" />
-              {getTotalItems() > 0 && <span className="cart-count">{getTotalItems()}</span>}
+            <div className="auth-button" onClick={() => navigate("/wishlist")}>
+              ❤️ Wishlist
             </div>
-            <img
-              src={profileIcon}
-              alt="Profile"
-              className="icon"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/profile")}
-            />
-            <span className="auth-button" onClick={() => navigate("/purchased-products")}>
-              My Purchases
-            </span>
-            <span className="signout-button" onClick={() => { signOut(); clearCart(); }}>
-              Sign Out
-            </span>
+
+            <div className="auth-button" onClick={() => navigate("/cart")}>
+              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/profile")}>
+              👤 Profile
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/purchased-products")}>
+              📦 My Purchases
+            </div>
+
+            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>
+              🚪 Sign Out
+            </div>
           </>
         ) : (
           <>
-            <div className="cart-icon-container" onClick={() => navigate("/cart")}>
-              <img src={cartIcon} alt="Cart" className="icon" />
-              {getTotalItems() > 0 && <span className="cart-count">{getTotalItems()}</span>}
+            <div className="auth-button" onClick={() => navigate("/cart")}>
+              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
             </div>
-            <span onClick={() => openModal("login")}>Login/Sign Up</span>
+            <div className="auth-button" onClick={() => openModal("login")}>
+              🔐 Login / Sign Up
+            </div>
           </>
         )}
       </div>
@@ -99,7 +94,9 @@ function Shop({ openModal, isSignedIn, signOut }) {
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <option value="All">All Categories</option>
             {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+              <option key={cat} value={cat}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </option>
             ))}
           </select>
 

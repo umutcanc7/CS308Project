@@ -1,15 +1,14 @@
-/* src/Shop.css */
-
-/* Shop page container with extra top padding to avoid overlapping fixed header elements */
+/* Shop page container with extra top padding */
 .shop-page {
-  padding: 70px 20px 20px;
+  padding: 120px 40px 20px;
   text-align: center;
   height: 100vh;
-  overflow-y: auto;
+  overflow-y: scroll;
   scroll-behavior: smooth;
+  box-sizing: border-box;
 }
 
-/* Shop header styles */
+/* Shop header */
 .shop-header {
   margin-bottom: 30px;
   color: #333;
@@ -27,11 +26,13 @@
 
 /* Products grid layout */
 .products {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  flex-wrap: wrap;
-  padding-bottom: 120px; /* Ensures space at the bottom like SafeArea */
+  padding-bottom: 120px;
+  justify-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 /* Product card styling */
@@ -87,6 +88,7 @@
   color: #666;
 }
 
+/* Cart button */
 .cart-icon-container {
   display: flex;
   align-items: center;
@@ -102,6 +104,8 @@
   font-weight: bold;
   font-size: 0.9rem;
 }
+
+/* Add to cart button */
 .add-to-cart-btn {
   margin-top: 8px;
   padding: 8px;
@@ -126,6 +130,7 @@
   background: #cccccc;
 }
 
+/* Review button */
 .review-btn {
   margin-top: 4px;
   padding: 6px;
@@ -140,63 +145,51 @@
   background: #f5f5f5;
 }
 
-/* Fixed positioning for auth links */
+/* Vertical Auth Links */
 .auth-links {
   position: fixed;
-  top: 10px;
+  top: 120px;
   right: 20px;
-  color: #000;
-  font-size: 16px;
-  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  background: transparent;
+  padding: 0;
+  z-index: 1000;
+}
+
+.icon-button,
+.auth-button,
+.signout-button,
+.auth-links span {
   display: flex;
   align-items: center;
-}
-
-/* Icon styling */
-.icon {
-  width: 24px;
-  height: 24px;
-  margin: 0 8px;
-  cursor: pointer;
-  vertical-align: middle;
-}
-
-/* Sign out button styling */
-.signout-button {
-  cursor: pointer;
-  margin-left: 15px;
-  vertical-align: middle;
-}
-
-.auth-button {
+  gap: 8px;
   background-color: #fff;
   border: 1px solid #ddd;
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin-left: 8px;
-  cursor: pointer;
-  font-size: 16px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-size: 14px;
   color: #000;
-  transition: background-color 0.2s;
-}
-
-.auth-button:hover {
-  background-color: #f5f5f5;
-}
-.auth-links span {
-  background-color: #fff;
-  border: 1px solid #ddd;
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin-left: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.auth-links span:hover {
+.auth-links span:hover,
+.cart-icon-container:hover,
+.signout-button:hover,
+.auth-button:hover,
+.icon-button:hover {
   background-color: #f5f5f5;
 }
-/* Menu styling for top left */
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Menu styling */
 .shop-page > nav,
 .shop-page > .menu {
   position: fixed;
@@ -214,11 +207,13 @@
   gap: 1rem;
   margin-bottom: 20px;
 }
+
 .shop-controls select {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ddd;
 }
+
 .shop-controls input {
   width: 160px;
   max-width: 100%;
@@ -227,6 +222,7 @@
   border: 1px solid #ddd;
 }
 
+/* Round icons */
 .icon {
   width: 36px;
   height: 36px;
@@ -241,11 +237,142 @@
   cursor: pointer;
 }
 
-/* Red heart icon */
+/* Heart icon */
 .icon.heart-icon::before {
   content: "♥";
   font-size: 18px;
   color: red;
   font-weight: bold;
   line-height: 1;
+}
+
+/* Scrollbar fix */
+.shop-page::-webkit-scrollbar {
+  width: 12px;
+}
+
+.shop-page::-webkit-scrollbar-track {
+  background: #f0ead6;
+  border-left: 1px solid #ccc;
+}
+
+.shop-page::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 6px;
+  border: 2px solid #f0ead6;
+}
+
+.shop-page::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+.auth-links {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: white;
+  padding: 20px;
+  border-radius: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  align-items: center;
+  width: 180px;
+}
+
+/* General shared button style */
+.auth-links .icon-button,
+.auth-links .auth-button,
+.auth-links .signout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  font-size: 16px;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-links .icon-button:hover,
+.auth-links .auth-button:hover,
+.auth-links .signout-button:hover {
+  background-color: #e0e0e0;
+}
+
+.auth-links .icon-button img,
+.auth-links .icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Adjust count bubble inside Cart icon */
+.cart-count {
+  background: #ff4444;
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  margin-left: auto;
+}
+
+.auth-links {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: white;
+  padding: 20px;
+  border-radius: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  width: 200px;
+  align-items: stretch;
+}
+
+.auth-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 30px;
+  font-size: 16px;
+  color: #000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.auth-button:hover {
+  background-color: #e0e0e0;
+}
+
+.auth-button .icon {
+  width: 20px;
+  height: 20px;
+}
+
+.cart-count {
+  margin-left: auto;
+  background: #ff4444;
+  color: white;
+  border-radius: 12px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
 }
