@@ -7,7 +7,7 @@ import "./Home.css";
 import blue1 from "./assets/blue1.jpg";
 import red1 from "./assets/red1.jpg";
 
-function Home({ openModal }) {
+function Home({ openModal, isSignedIn, signOut }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
 
@@ -26,7 +26,11 @@ function Home({ openModal }) {
       <div className="top-bar">
         <Menu openModal={openModal} />
         <div className="auth-links">
-          <span onClick={() => openModal("login")}>Login/Sign Up</span>
+          {isSignedIn ? (
+            <span className="signout-button" onClick={signOut}>Sign Out</span>
+          ) : (
+            <span onClick={() => openModal("login")}>Login/Sign Up</span>
+          )}
         </div>
       </div>
 
