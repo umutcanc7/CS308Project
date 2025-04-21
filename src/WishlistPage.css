@@ -1,9 +1,9 @@
 /* src/WishlistPage.css */
 
 .wishlist-page {
-  padding: 60px 20px 20px;
+  padding: 80px 20px 40px;
   text-align: center;
-  background-color: #f0f0f0;
+  background-color: #F0EAD6; /* Match product/shop background */
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -19,6 +19,8 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .wishlist-card {
@@ -27,8 +29,8 @@
   border: 1px solid #ddd;
   border-radius: 10px;
   text-align: center;
-  background-color: #ffffff;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  background-color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -59,18 +61,17 @@
 }
 
 .remove-btn {
-  background: #fff;
-  color: #e60023;
-  border: 1px solid #e60023;
-  padding: 6px 12px;
+  background: #e60023;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
   margin-top: 10px;
   cursor: pointer;
   border-radius: 5px;
   font-weight: bold;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .remove-btn:hover {
-  background: #e60023;
-  color: #fff;
+  background: #c7001b;
 }
