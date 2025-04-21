@@ -1,64 +1,76 @@
-import React from 'react';
+// src/Cart.js
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { recordPurchase } from './api/purchase';
 import './Cart.css';
 
+const images = require.context('./assets', false, /\.(png|jpe?g|webp|svg)$/);
+
 function Cart() {
   const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
+  const [productImages, setProductImages] = useState({}); // maps productId -> image1
 
-  const handleCheckout = async () => {
-    console.log("🛒 Checkout button clicked");
-
-    // 1. Eğer kart boşsa, checkout sayfasına gitmemeliyiz
-    if (!cart.length) {
-      alert("Cart is empty!");
-      return;
-    }
-
-    // 2. Kullanıcı login olmamışsa, checkout sayfasına gitmemeliyiz
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("Please log in before checkout.");
-      return;
-    }
-
-    // 3. Ürün verilerinde eksiklik varsa, checkout sayfasına gitmemeliyiz
-    const productDataMissing = cart.some(item => !item.id || !item.price || !item.quantity);
-    if (productDataMissing) {
-      alert("Some product details are missing (e.g., product ID, price, or quantity). Please review your cart.");
-      return;
-    }
-
-    // Eğer tüm kontroller geçerse, checkout sayfasına yönlendirebiliriz
-    navigate('/credit-card-form');  // Yönlendirme yapılacak sayfa
-
+  // Load image by filename
+  const getImage = (imageName) => {
+    if (!imageName) return images('./logo.png');
     try {
-      let successCount = 0;
+      return images(`./${imageName}`);
+    } catch {
+      return images('./logo.png');
+    }
+  };
 
-      // Satın alım işlemi
+  // Fetch image1 for each cart item using product id
+  useEffect(() => {
+    const fetchImages = async () => {
+      const newMap = {};
       for (const item of cart) {
-        const result = await recordPurchase(item.id, item.quantity);
-        console.log("🔁 Purchase response:", result);
-
-        if (result.success) {
-          successCount++;
-        } else {
-          alert(`❌ Failed for ${item.name}: ${result.error}`);
+        try {
+          const res = await fetch(`http://localhost:5001/products/${item.id}`);
+          const data = await res.json();
+          if (data.success && data.data?.image1) {
+            newMap[item.id] = data.data.image1;
+          }
+        } catch (err) {
+          console.error(`Error fetching product ${item.id}:`, err);
         }
       }
+      setProductImages(newMap);
+    };
 
-      if (successCount === cart.length) {
-        alert("✅ All items successfully added!");
-        clearCart();
-      } else if (successCount > 0) {
-        alert("⚠️ Some items were purchased, but others failed.");
+    if (cart.length > 0) {
+      fetchImages();
+    }
+  }, [cart]);
+
+  const handleCheckout = async () => {
+    if (!cart.length) return alert('Cart is empty!');
+    const token = localStorage.getItem('token');
+    if (!token) return alert('Please log in before checkout.');
+
+    const badItem = cart.some(it => !it.id || !it.price || !it.quantity);
+    if (badItem) return alert('Some product details are missing.');
+
+    navigate('/credit-card-form');
+
+    try {
+      let ok = 0;
+      for (const it of cart) {
+        const res = await recordPurchase(it.id, it.quantity);
+        if (res.success) ok++;
+        else alert(`❌ Failed for ${it.name}: ${res.error}`);
       }
-
-    } catch (error) {
-      console.error("Error during checkout:", error);
-      alert("Something went wrong during checkout.");
+      if (ok === cart.length) {
+        alert('✅ All items successfully added!');
+        clearCart();
+      } else if (ok) {
+        alert('⚠️ Some items were purchased, others failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Something went wrong during checkout.');
     }
   };
 
@@ -69,42 +81,44 @@ function Cart() {
       {cart.length === 0 ? (
         <div className="empty-cart">
           <p>Your cart is empty.</p>
-          <Link to="/shop" className="continue-shopping-btn">
-            Continue Shopping
-          </Link>
+          <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
         </div>
       ) : (
         <>
           <div className="cart-items">
-            {cart.map((item) => (
-              <div key={item.id} className="cart-item">
-                <img src={item.image} alt={item.name} className="cart-item-image" />
+            {cart.map((it) => (
+              <div key={it.id} className="cart-item">
+                <img
+                  src={getImage(productImages[it.id])}
+                  alt={it.name}
+                  className="cart-item-image"
+                />
+
                 <div className="cart-item-details">
-                  <h3>{item.name}</h3>
-                  <p className="cart-item-price">${item.price.toFixed(2)}</p>
+                  <h3>{it.name}</h3>
+                  <p className="cart-item-price">${it.price.toFixed(2)}</p>
                 </div>
+
                 <div className="cart-item-quantity">
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
                     className="quantity-btn"
-                  >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
+                    onClick={() => updateQuantity(it.id, it.quantity - 1)}
+                    disabled={it.quantity <= 1}
+                  >−</button>
+
+                  <span>{it.quantity}</span>
+
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
                     className="quantity-btn"
-                  >
-                    +
-                  </button>
+                    onClick={() => updateQuantity(it.id, it.quantity + 1)}
+                  >+</button>
                 </div>
+
                 <div className="cart-item-total">
-                  ${(item.price * item.quantity).toFixed(2)}
+                  ${(it.price * it.quantity).toFixed(2)}
                 </div>
-                <button
-                  onClick={() => removeFromCart(item.id)}
-                  className="remove-btn"
-                >
+
+                <button className="remove-btn" onClick={() => removeFromCart(it.id)}>
                   Remove
                 </button>
               </div>
@@ -116,10 +130,9 @@ function Cart() {
               <span>Total:</span>
               <span>${getTotalPrice().toFixed(2)}</span>
             </div>
+
             <div className="cart-actions">
-              <Link to="/shop" className="continue-shopping-btn">
-                Continue Shopping
-              </Link>
+              <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
               <button className="checkout-btn" onClick={handleCheckout}>
                 Proceed to Checkout
               </button>

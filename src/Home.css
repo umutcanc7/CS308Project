@@ -14,7 +14,7 @@ html, body {
   overflow-y: scroll;      /* enable vertical scrolling */
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
-  padding-right: 16px;     /* reserve scrollbar space */
+  padding-right: 150px;     /* reserve scrollbar space */
   box-sizing: content-box;
 }
 
@@ -65,8 +65,9 @@ html, body {
 
 /* Logo Section */
 .fullscreen-logo {
-  max-width: 90vw;
-  max-height: 80vh;
+  width: 60vw;
+  height: auto;
+  max-height: none;
   object-fit: contain;
 }
 

@@ -35,7 +35,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
     try {
       return require(`./assets/${imageName}`);
     } catch {
-      // Eğer resim bulunamazsa varsayılan bir resim göster
       return require('./assets/logo.png');
     }
   };
@@ -47,7 +46,12 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   ];
 
   const handleCartClick = () => navigate('/cart');
-  const toggleWishlist = () => setWishlisted(!isWishlisted);
+  const toggleWishlist = () => {
+    if (isSignedIn) {
+      setWishlisted(!isWishlisted);
+      // Optionally send to backend
+    }
+  };
 
   return (
     <div className="modern-product-page">
@@ -75,12 +79,13 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           <h1 className="product-name">{product.name}</h1>
           <div className="price">${product.price.toFixed(2)}</div>
 
-          <button
-            className="wishlist-button"
-            onClick={toggleWishlist}
-          >
-            {isWishlisted ? '♥ Remove from Wishlist' : '♡ Add to Wishlist'}
-          </button>
+          {isSignedIn ? (
+            <button className="wishlist-button" onClick={toggleWishlist}>
+              {isWishlisted ? '♥ Remove from Wishlist' : '♡ Add to Wishlist'}
+            </button>
+          ) : (
+            <p className="wishlist-login-text">You must login first to use wishlist</p>
+          )}
 
           <p className="description">{product.description}</p>
 
@@ -134,16 +139,24 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
             <img src={heartIcon} alt="Favorites" className="icon" />
             <div className="cart-icon-container" onClick={handleCartClick}>
               <img src={cartIcon} alt="Cart" className="icon" />
-              {getTotalItems() > 0 && <span className="cart-count">{getTotalItems()}</span>}
+              {getTotalItems() > 0 && (
+                <span className="cart-count">{getTotalItems()}</span>
+              )}
             </div>
-            <span onClick={() => navigate('/purchased-products')}>My Purchases</span>
-            <span className="signout-button" onClick={signOut}>Sign Out</span>
+            <span onClick={() => navigate('/purchased-products')}>
+              My Purchases
+            </span>
+            <span className="signout-button" onClick={signOut}>
+              Sign Out
+            </span>
           </>
         ) : (
           <>
             <div className="cart-icon-container" onClick={handleCartClick}>
               <img src={cartIcon} alt="Cart" className="icon" />
-              {getTotalItems() > 0 && <span className="cart-count">{getTotalItems()}</span>}
+              {getTotalItems() > 0 && (
+                <span className="cart-count">{getTotalItems()}</span>
+              )}
             </div>
             <span onClick={() => openModal('login')}>Login/Sign Up</span>
           </>

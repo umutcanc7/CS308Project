@@ -87,6 +87,21 @@
   color: #666;
 }
 
+.cart-icon-container {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-right: 8px;
+}
+
+.cart-count {
+  margin-left: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
 .add-to-cart-btn {
   margin-top: 8px;
   padding: 8px;
@@ -149,10 +164,38 @@
 /* Sign out button styling */
 .signout-button {
   cursor: pointer;
-  margin-left: 12px;
+  margin-left: 15px;
   vertical-align: middle;
 }
 
+.auth-button {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #000;
+  transition: background-color 0.2s;
+}
+
+.auth-button:hover {
+  background-color: #f5f5f5;
+}
+.auth-links span {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  margin-left: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.auth-links span:hover {
+  background-color: #f5f5f5;
+}
 /* Menu styling for top left */
 .shop-page > nav,
 .shop-page > .menu {

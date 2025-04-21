@@ -3,9 +3,9 @@ import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Menu from "./Menu";
 import logo from "./assets/logo.png";
-import collection1 from "./assets/collection1.jpg";
-import collection2 from "./assets/collection2.jpg";
 import "./Home.css";
+import blue1 from "./assets/blue1.jpg";
+import red1 from "./assets/red1.jpg";
 
 function Home({ openModal }) {
   const navigate = useNavigate();
@@ -46,8 +46,8 @@ function Home({ openModal }) {
         </div>
         <div className="hero-images">
           <div className="image-slider">
-            <img src={collection1} alt="Collection 1" />
-            <img src={collection2} alt="Collection 2" />
+            <img src={blue1} alt="Blue Collection 1" />
+            <img src={red1} alt="Red Collection 2" />
           </div>
           <div className="slider-controls">
             <button className="prev">←</button>

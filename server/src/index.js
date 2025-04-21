@@ -50,6 +50,8 @@ app.get('/signup', (req, res) => {
     res.render('signup'); // Renders signup.ejs
 });
 
+
+
 // Start server
 const port = process.env.PORT || 5001;
 app.listen(port, () => {
