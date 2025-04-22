@@ -74,6 +74,36 @@ function Cart() {
     }
   };
 
+  const handleQuantityChange = async (item, newQuantity) => {
+    // Fetch current stock from the database
+    try {
+      const response = await fetch(`http://localhost:5001/products/${item.id}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        const currentStock = data.data.stock;
+        
+        // Check if new quantity exceeds stock
+        if (newQuantity > currentStock) {
+          alert(`❌ Cannot add more items. Only ${currentStock} available in stock.`);
+          return;
+        }
+        
+        // If quantity is valid, update the cart
+        if (newQuantity > 0) {
+          updateQuantity(item.id, newQuantity);
+        } else {
+          removeFromCart(item.id);
+        }
+      } else {
+        alert('❌ Error checking product stock');
+      }
+    } catch (error) {
+      console.error('Error checking stock:', error);
+      alert('❌ Error checking product stock');
+    }
+  };
+
   return (
     <div className="cart-page">
       <h2>Your Shopping Cart</h2>
@@ -102,7 +132,7 @@ function Cart() {
                 <div className="cart-item-quantity">
                   <button
                     className="quantity-btn"
-                    onClick={() => updateQuantity(it.id, it.quantity - 1)}
+                    onClick={() => handleQuantityChange(it, it.quantity - 1)}
                     disabled={it.quantity <= 1}
                   >−</button>
 
@@ -110,7 +140,7 @@ function Cart() {
 
                   <button
                     className="quantity-btn"
-                    onClick={() => updateQuantity(it.id, it.quantity + 1)}
+                    onClick={() => handleQuantityChange(it, it.quantity + 1)}
                   >+</button>
                 </div>
 

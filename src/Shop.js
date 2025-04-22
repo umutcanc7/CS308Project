@@ -6,7 +6,7 @@ import "./Shop.css";
 import { useCart } from "./CartContext";
 
 function Shop({ openModal, isSignedIn, signOut }) {
-  const { addToCart, getTotalItems, clearCart } = useCart();
+  const { addToCart, getTotalItems, clearCart, cart, updateQuantity } = useCart();
   const navigate = useNavigate();
   const [wishlistCount, setWishlistCount] = useState(0);
 
@@ -69,10 +69,28 @@ function Shop({ openModal, isSignedIn, signOut }) {
 
   const handleAddToCart = async (product) => {
     try {
-      await addToCart({ ...product, id: product._id, image: product.image1 });
+      // Get current cart quantity for this product
+      const existingItem = cart.find(item => item.id === product._id);
+      const currentCartQuantity = existingItem?.quantity || 0;
+      
+      // Check if adding one more would exceed stock
+      if (currentCartQuantity + 1 > product.stock) {
+        alert(`❌ Cannot add more items. Only ${product.stock} available in stock.`);
+        return;
+      }
+
+      if (existingItem) {
+        // If item exists, update its quantity
+        await updateQuantity(product._id, currentCartQuantity + 1);
+      } else {
+        // If item doesn't exist, add it new
+        await addToCart({ ...product, id: product._id, image: product.image1 });
+      }
+      alert("✅ Product added to cart successfully!");
       console.log("✅ Added to cart:", product.name);
     } catch (error) {
       console.error("Failed to add to cart:", error);
+      alert("❌ Failed to add product to cart");
     }
   };
 

@@ -11,7 +11,7 @@ import profileIcon from './assets/profile.svg';
 function ProductPage({ openModal, isSignedIn, signOut }) {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { addToCart, getTotalItems, clearCart } = useCart();
+  const { addToCart, getTotalItems, clearCart, cart, updateQuantity } = useCart();
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [mainImage, setMainImage] = useState(0);
@@ -229,7 +229,25 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
             disabled={product.stock < 1}
             onClick={() => {
               if (product.stock < 1) return;
-              addToCart({ ...product, id: product._id });
+              
+              // Get current cart quantity for this product
+              const existingItem = cart.find(item => item.id === product._id);
+              const currentCartQuantity = existingItem?.quantity || 0;
+              
+              // Check if adding one more would exceed stock
+              if (currentCartQuantity + 1 > product.stock) {
+                alert(`❌ Cannot add more items. Only ${product.stock} available in stock.`);
+                return;
+              }
+
+              if (existingItem) {
+                // If item exists, update its quantity
+                updateQuantity(product._id, currentCartQuantity + 1);
+              } else {
+                // If item doesn't exist, add it new
+                addToCart({ ...product, id: product._id });
+              }
+              alert("✅ Product added to cart successfully!");
             }}
           >
             {product.stock < 1 ? 'OUT OF STOCK' : 'ADD'}
