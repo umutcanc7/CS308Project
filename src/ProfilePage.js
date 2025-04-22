@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Menu from './Menu';
 import './ProfilePage.css';
+import { useCart } from './CartContext';
 
-function ProfilePage({ isSignedIn, signOut }) {
+function ProfilePage({ isSignedIn, signOut, openModal }) {
   const navigate = useNavigate();
+  const { getTotalItems, clearCart } = useCart();
+  const [wishlistCount, setWishlistCount] = useState(0);
   const [userInfo, setUserInfo] = useState({
     name: '',
     email: '',
@@ -13,6 +16,33 @@ function ProfilePage({ isSignedIn, signOut }) {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editedInfo, setEditedInfo] = useState({...userInfo});
+
+  // Add function to fetch wishlist count
+  const fetchWishlistCount = async () => {
+    if (!isSignedIn) {
+      setWishlistCount(0);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:5001/wishlist", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setWishlistCount(data.data.length);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchWishlistCount();
+  }, [isSignedIn]);
 
   useEffect(() => {
     if (!isSignedIn) {
@@ -91,6 +121,43 @@ function ProfilePage({ isSignedIn, signOut }) {
   return (
     <div className="profile-page">
       <Menu />
+
+      {/* Navigation Bar */}
+      <div className="auth-links">
+        {isSignedIn ? (
+          <>
+            <div className="auth-button" onClick={() => navigate("/wishlist")}>
+              ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/cart")}>
+              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/profile")}>
+              👤 Profile
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/purchased-products")}>
+              📦 My Purchases
+            </div>
+
+            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>
+              🚪 Sign Out
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="auth-button" onClick={() => navigate("/cart")}>
+              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
+            </div>
+            <div className="auth-button" onClick={() => openModal("login")}>
+              🔐 Login / Sign Up
+            </div>
+          </>
+        )}
+      </div>
+
       <div className="profile-container">
         <h1>My Profile</h1>
         <div className="profile-content">

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext"; // Import refreshCart from cart context
 import "./AuthModal.css";
 
-function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn }) {
+function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn, openModal }) {
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

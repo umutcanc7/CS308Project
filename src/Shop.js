@@ -8,12 +8,41 @@ import { useCart } from "./CartContext";
 function Shop({ openModal, isSignedIn, signOut }) {
   const { addToCart, getTotalItems, clearCart } = useCart();
   const navigate = useNavigate();
+  const [wishlistCount, setWishlistCount] = useState(0);
 
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [sortOption, setSortOption] = useState("name_asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+
+  // Add function to fetch wishlist count
+  const fetchWishlistCount = async () => {
+    if (!isSignedIn) {
+      setWishlistCount(0);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:5001/wishlist", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setWishlistCount(data.data.length);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    }
+  };
+
+  // Add useEffect to fetch wishlist count
+  useEffect(() => {
+    fetchWishlistCount();
+  }, [isSignedIn]);
 
   const getImage = (imageName) => {
     try {
@@ -38,10 +67,18 @@ function Shop({ openModal, isSignedIn, signOut }) {
       .catch(console.error);
   }, []);
 
+  const handleAddToCart = async (product) => {
+    try {
+      await addToCart({ ...product, id: product._id, image: product.image1 });
+      console.log("✅ Added to cart:", product.name);
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+    }
+  };
+
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase();
-    const matchSearch =
-      p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
+    const matchSearch = p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
     const matchCat = selectedCategory === "All" || p.category === selectedCategory;
     return matchSearch && matchCat;
   });
@@ -50,12 +87,12 @@ function Shop({ openModal, isSignedIn, signOut }) {
     <div className="shop-page">
       <Menu />
 
-      {/* Sidebar with emoji text buttons only */}
+      {/* Sidebar with emoji text buttons */}
       <div className="auth-links">
         {isSignedIn ? (
           <>
             <div className="auth-button" onClick={() => navigate("/wishlist")}>
-              ❤️ Wishlist
+              ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
             </div>
 
             <div className="auth-button" onClick={() => navigate("/cart")}>
@@ -134,7 +171,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
 
             <button
               className="add-to-cart-btn"
-              onClick={() => addToCart({ ...p, id: p._id, image: p.image1 })}
+              onClick={() => handleAddToCart(p)}
               disabled={p.stock < 1}
             >
               {p.stock < 1 ? "OUT OF STOCK" : "Add to Cart"}

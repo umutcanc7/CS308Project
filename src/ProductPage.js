@@ -11,11 +11,38 @@ import profileIcon from './assets/profile.svg';
 function ProductPage({ openModal, isSignedIn, signOut }) {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { addToCart, getTotalItems } = useCart();
+  const { addToCart, getTotalItems, clearCart } = useCart();
   const [products, setProducts] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [mainImage, setMainImage] = useState(0);
   const [isWishlisted, setWishlisted] = useState(false);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  const fetchWishlistCount = async () => {
+    if (!isSignedIn) {
+      setWishlistCount(0);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch("http://localhost:5001/wishlist", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setWishlistCount(data.data.length);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchWishlistCount();
+  }, [isSignedIn]);
 
   useEffect(() => {
     fetch('http://localhost:5001/products/sort?by=name&order=asc')
@@ -84,6 +111,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
         const data = await res.json();
         if (data.success) {
           setWishlisted(true);
+          fetchWishlistCount();
           console.log("✅ Added to wishlist");
         } else {
           alert(`❌ ${data.message}`);
@@ -100,6 +128,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
         const data = await res.json();
         if (data.success) {
           setWishlisted(false);
+          fetchWishlistCount();
           console.log("✅ Removed from wishlist");
         } else {
           alert(`❌ ${data.message}`);
@@ -113,6 +142,41 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   return (
     <div className="modern-product-page">
       <Menu />
+
+      <div className="auth-links">
+        {isSignedIn ? (
+          <>
+            <div className="auth-button" onClick={() => navigate("/wishlist")}>
+              ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/cart")}>
+              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/profile")}>
+              👤 Profile
+            </div>
+
+            <div className="auth-button" onClick={() => navigate("/purchased-products")}>
+              📦 My Purchases
+            </div>
+
+            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>
+              🚪 Sign Out
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="auth-button" onClick={() => navigate("/cart")}>
+              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
+            </div>
+            <div className="auth-button" onClick={() => openModal("login")}>
+              🔐 Login / Sign Up
+            </div>
+          </>
+        )}
+      </div>
 
       <div className="product-layout">
         <div className="product-gallery">
@@ -201,49 +265,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           </div>
         ) : (
           <p className="no-reviews">Be the first to review this product</p>
-        )}
-      </div>
-
-      <div className="auth-links">
-        {isSignedIn ? (
-          <>
-            <img
-              src={heartIcon}
-              alt="Wishlist"
-              className="icon"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/wishlist")}
-            />
-            <div className="cart-icon-container" onClick={handleCartClick}>
-              <img src={cartIcon} alt="Cart" className="icon" />
-              {getTotalItems() > 0 && (
-                <span className="cart-count">{getTotalItems()}</span>
-              )}
-            </div>
-            <img
-              src={profileIcon}
-              alt="Profile"
-              className="icon"
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/profile")}
-            />
-            <span onClick={() => navigate('/purchased-products')}>
-              My Purchases
-            </span>
-            <span className="signout-button" onClick={signOut}>
-              Sign Out
-            </span>
-          </>
-        ) : (
-          <>
-            <div className="cart-icon-container" onClick={handleCartClick}>
-              <img src={cartIcon} alt="Cart" className="icon" />
-              {getTotalItems() > 0 && (
-                <span className="cart-count">{getTotalItems()}</span>
-              )}
-            </div>
-            <span onClick={() => openModal('login')}>Login/Sign Up</span>
-          </>
         )}
       </div>
     </div>
