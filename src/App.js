@@ -12,6 +12,7 @@ import PurchasedProductsPage from "./PurchasedProductsPage";
 import ProductReviewsPage from "./ProductReviewsPage";
 import CreditCardForm from "./CreditCardForm";
 import ProfilePage from './ProfilePage';
+import Receipt from "./Receipt"; // Adjust path if needed
 import "./App.css";
 
 function App() {
@@ -63,6 +64,7 @@ function App() {
           <Route path="/product-reviews/:productId" element={<ProductReviewsPage />} />
           <Route path="/credit-card-form" element={<CreditCardForm />} />
           <Route path="/profile" element={<ProfilePage isSignedIn={isSignedIn} signOut={signOut} />} />
+          <Route path="/receipt" element={<Receipt />} />
         </Routes>
 
         <AuthModal

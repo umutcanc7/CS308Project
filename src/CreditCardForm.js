@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";  // axios kullanarak API çağrısı yapıyoruz
+import { useCart } from "./CartContext";
+import { recordPurchase } from "./api/purchase";
 import "./CreditCardForm.css";
 
 function CreditCardForm() {
   const navigate = useNavigate();
+  const { cart, clearCart } = useCart();
 
   const [cardNumber, setCardNumber] = useState("");
   const [cvv, setCvv] = useState("");
@@ -13,32 +15,43 @@ function CreditCardForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Burada kredi kartı doğrulaması yapmıyoruz. Sadece giriş yapılmışsa, işlem başlatıyoruz.
-    
-    setErrorMessage(""); // Önceki hata mesajını temizliyoruz
+    setErrorMessage("");
+
+    // Basic card field checks (fake validation)
+    if (!cardNumber || !cvv || !expiryDate) {
+      setErrorMessage("Please fill out all fields.");
+      return;
+    }
+
+    if (cart.length === 0) {
+      setErrorMessage("Your cart is empty.");
+      return;
+    }
 
     try {
-      const orderDetails = {
-        cardNumber,  // Kredi kartı bilgileri frontend'de kullanılacak
-        cvv,
-        expiryDate,
-      };
+      let successCount = 0;
 
-      // API'ye sipariş kaydını gönderiyoruz
-      const response = await axios.post("http://localhost:5001/api/purchase", orderDetails);
+      for (const item of cart) {
+        const totalPrice = item.price * item.quantity;
+        const response = await recordPurchase(item.id, item.quantity, totalPrice);
+        console.log("Purchase Response for", item.name, "→", response); // 👈 ADD THIS LINE
+      
+        if (response.success) {
+          localStorage.setItem("orderId", response.orderId);  // optional
+          successCount++;
+        } else {
+          setErrorMessage(`Failed to process ${item.name}: ${response.error}`);
+        }
+      }
 
-      if (response.data.success) {
-        // Sipariş ID'sini localStorage'a kaydediyoruz
-        localStorage.setItem("orderId", response.data.orderId);
-
-        // Sipariş başarılı, kullanıcıyı fatura sayfasına yönlendiriyoruz
-        navigate("/receipt");  // Sipariş sayfasına yönlendirme
+      if (successCount === cart.length) {
+        clearCart();  // Empty the cart on successful payment
+        navigate("/receipt");
       } else {
-        setErrorMessage("There was an issue with the payment. Please try again.");
+        setErrorMessage("Some items could not be processed.");
       }
     } catch (error) {
-      console.error("Error during payment:", error);
+      console.error("Error during purchase:", error);
       setErrorMessage("Something went wrong. Please try again.");
     }
   };

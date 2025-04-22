@@ -1,0 +1,84 @@
+.purchased-page {
+    padding: 3rem;
+    max-width: 1200px;
+    margin: auto;
+    font-family: "Segoe UI", sans-serif;
+  }
+  
+  .purchased-list {
+    max-height: 700px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    background: #fefefe;
+    border-radius: 16px;
+  }
+  
+  .purchased-card.with-image {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 2rem;
+    background-color: #f4f4f4;
+    border-radius: 16px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  }
+  
+  .purchased-img {
+    width: 160px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: 12px;
+    flex-shrink: 0;
+    border: 1px solid #ddd;
+  }
+  
+  .purchased-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .purchased-info h3 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+  
+  .price {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 0.6rem 0;
+    color: #222;
+  }
+  
+  .purchased-info p {
+    font-size: 1.1rem;
+    margin: 0.3rem 0;
+  }
+  
+  .purchased-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .purchased-buttons button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .purchased-buttons button:hover {
+    background-color: #0056b3;
+  }
+  

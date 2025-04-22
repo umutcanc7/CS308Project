@@ -2,17 +2,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
-import { recordPurchase } from './api/purchase';
 import './Cart.css';
 
 const images = require.context('./assets', false, /\.(png|jpe?g|webp|svg)$/);
 
 function Cart() {
   const navigate = useNavigate();
-  const { cart, removeFromCart, updateQuantity, getTotalPrice, clearCart } = useCart();
-  const [productImages, setProductImages] = useState({}); // maps productId -> image1
+  const { cart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+  const [productImages, setProductImages] = useState({});
 
-  // Load image by filename
   const getImage = (imageName) => {
     if (!imageName) return images('./logo.png');
     try {
@@ -22,7 +20,6 @@ function Cart() {
     }
   };
 
-  // Fetch image1 for each cart item using product id
   useEffect(() => {
     const fetchImages = async () => {
       const newMap = {};
@@ -45,51 +42,25 @@ function Cart() {
     }
   }, [cart]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (!cart.length) return alert('Cart is empty!');
     const token = localStorage.getItem('token');
     if (!token) return alert('Please log in before checkout.');
 
-    const badItem = cart.some(it => !it.id || !it.price || !it.quantity);
-    if (badItem) return alert('Some product details are missing.');
-
     navigate('/credit-card-form');
-
-    try {
-      let ok = 0;
-      for (const it of cart) {
-        const res = await recordPurchase(it.id, it.quantity);
-        if (res.success) ok++;
-        else alert(`❌ Failed for ${it.name}: ${res.error}`);
-      }
-      if (ok === cart.length) {
-        alert('✅ All items successfully added!');
-        clearCart();
-      } else if (ok) {
-        alert('⚠️ Some items were purchased, others failed.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Something went wrong during checkout.');
-    }
   };
 
   const handleQuantityChange = async (item, newQuantity) => {
-    // Fetch current stock from the database
     try {
       const response = await fetch(`http://localhost:5001/products/${item.id}`);
       const data = await response.json();
-      
+
       if (data.success) {
         const currentStock = data.data.stock;
-        
-        // Check if new quantity exceeds stock
         if (newQuantity > currentStock) {
           alert(`❌ Cannot add more items. Only ${currentStock} available in stock.`);
           return;
         }
-        
-        // If quantity is valid, update the cart
         if (newQuantity > 0) {
           updateQuantity(item.id, newQuantity);
         } else {
@@ -123,31 +94,25 @@ function Cart() {
                   alt={it.name}
                   className="cart-item-image"
                 />
-
                 <div className="cart-item-details">
                   <h3>{it.name}</h3>
                   <p className="cart-item-price">${it.price.toFixed(2)}</p>
                 </div>
-
                 <div className="cart-item-quantity">
                   <button
                     className="quantity-btn"
                     onClick={() => handleQuantityChange(it, it.quantity - 1)}
                     disabled={it.quantity <= 1}
                   >−</button>
-
                   <span>{it.quantity}</span>
-
                   <button
                     className="quantity-btn"
                     onClick={() => handleQuantityChange(it, it.quantity + 1)}
                   >+</button>
                 </div>
-
                 <div className="cart-item-total">
                   ${(it.price * it.quantity).toFixed(2)}
                 </div>
-
                 <button className="remove-btn" onClick={() => removeFromCart(it.id)}>
                   Remove
                 </button>
@@ -160,7 +125,6 @@ function Cart() {
               <span>Total:</span>
               <span>${getTotalPrice().toFixed(2)}</span>
             </div>
-
             <div className="cart-actions">
               <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
               <button className="checkout-btn" onClick={handleCheckout}>
