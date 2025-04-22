@@ -69,10 +69,10 @@ function Shop({ openModal, isSignedIn, signOut }) {
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     const [by, order] = sortOption.split("_");
-  
+
     let valA = a[by];
     let valB = b[by];
-  
+
     if (by === "averageRating") {
       valA = parseFloat(valA) || 0;
       valB = parseFloat(valB) || 0;
@@ -80,7 +80,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
       valA = valA.toLowerCase();
       valB = valB.toLowerCase();
     }
-  
+
     if (order === "asc") return valA > valB ? 1 : -1;
     return valA < valB ? 1 : -1;
   });
@@ -136,6 +136,7 @@ function Shop({ openModal, isSignedIn, signOut }) {
             <h3 onClick={() => navigate(`/product/${p._id}`)} style={{ cursor: "pointer" }}>{p.name}</h3>
             <p className="product-price">${p.price.toFixed(2)}</p>
             <p className="product-description">{p.category}</p>
+
             <div className="product-rating">
               {p.averageRating ? (
                 <div>
@@ -150,9 +151,12 @@ function Shop({ openModal, isSignedIn, signOut }) {
                 <span className="no-ratings">No reviews yet</span>
               )}
             </div>
-            <button className="add-to-cart-btn" onClick={() => handleAddToCart(p)} disabled={p.stock < 1}>
-              {p.stock < 1 ? "OUT OF STOCK" : "Add to Cart"}
-            </button>
+
+            <div className="button-wrapper">
+              <button className="add-to-cart-btn" onClick={() => handleAddToCart(p)} disabled={p.stock < 1}>
+                {p.stock < 1 ? "OUT OF STOCK" : "Add to Cart"}
+              </button>
+            </div>
           </div>
         ))}
       </section>

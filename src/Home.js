@@ -1,17 +1,25 @@
-// Home.js
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Menu from "./Menu";
 import logo from "./assets/logo.png";
 import "./Home.css";
-import blue1 from "./assets/blue1.jpg";
-import red1 from "./assets/red1.jpg";
 
-function Home({ openModal, isSignedIn, signOut }) {
+function Home({ openModal, isSignedIn: parentSignedIn, signOut }) {
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
-  // Smooth, slower scroll handler
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [categoryProducts, setCategoryProducts] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsSignedIn(!!token);
+  }, [parentSignedIn]);
+
+  // Smooth scroll
   const handleWheel = (e) => {
     e.preventDefault();
     containerRef.current.scrollBy({
@@ -19,6 +27,53 @@ function Home({ openModal, isSignedIn, signOut }) {
       behavior: 'smooth'
     });
   };
+
+  // Fetch categories on load
+  useEffect(() => {
+    fetch("http://localhost:5001/products/categories")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setCategories(data.data);
+          setSelectedCategory(data.data[0] || "");
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  // Fetch products in selected category
+  useEffect(() => {
+    if (!selectedCategory) return;
+
+    fetch("http://localhost:5001/products")
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          const filtered = data.data.filter(p => p.category === selectedCategory);
+          setCategoryProducts(filtered);
+          setCurrentIndex(0);
+        }
+      })
+      .catch(console.error);
+  }, [selectedCategory]);
+
+  const getImage = (imageName) => {
+    try {
+      return require(`./assets/${imageName}`);
+    } catch {
+      return require("./assets/logo.png");
+    }
+  };
+
+  const nextProduct = () => {
+    setCurrentIndex((prev) => (prev + 1) % categoryProducts.length);
+  };
+
+  const prevProduct = () => {
+    setCurrentIndex((prev) => (prev - 1 + categoryProducts.length) % categoryProducts.length);
+  };
+
+  const currentProduct = categoryProducts[currentIndex];
 
   return (
     <div className="home" ref={containerRef} onWheel={handleWheel}>
@@ -39,24 +94,46 @@ function Home({ openModal, isSignedIn, signOut }) {
         <img src={logo} alt="Logo" className="fullscreen-logo" />
       </section>
 
-      {/* New Collection Section */}
+      {/* Category-Based Product Section */}
       <section className="hero-section">
         <div className="hero-content">
-          <h1>NEW<br/>PRODUCT</h1>
-          <p>Spring<br/>2025</p>
+          <h1>Categories</h1>
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="category-dropdown"
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </option>
+            ))}
+          </select>
           <button onClick={() => navigate('/shop')} className="go-to-shop">
             Go To Shop <span className="arrow">→</span>
           </button>
         </div>
-        <div className="hero-images">
-          <div className="image-slider">
-            <img src={blue1} alt="Blue Collection 1" />
-            <img src={red1} alt="Red Collection 2" />
-          </div>
-          <div className="slider-controls">
-            <button className="prev">←</button>
-            <button className="next">→</button>
-          </div>
+
+        <div className="hero-product-display">
+          {currentProduct ? (
+            <div className="product-card">
+              <img
+                src={getImage(currentProduct.image1)}
+                alt={currentProduct.name}
+                className="product-image"
+              />
+              <h3>{currentProduct.name}</h3>
+              <p>${currentProduct.price.toFixed(2)}</p>
+            </div>
+          ) : (
+            <p>No products in this category</p>
+          )}
+          {categoryProducts.length > 1 && (
+            <div className="slider-controls">
+              <button onClick={prevProduct}>←</button>
+              <button onClick={nextProduct}>→</button>
+            </div>
+          )}
         </div>
       </section>
     </div>
