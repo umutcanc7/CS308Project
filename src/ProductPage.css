@@ -241,3 +241,22 @@
 .signout-button {
   color: #ff4444;
 }
+
+.average-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.star-symbol {
+  color: #ffd700;
+  font-size: 36px;
+}
+
+.rating-number {
+  color: #333;
+}

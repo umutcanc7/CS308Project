@@ -56,7 +56,15 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
       return;
     }
 
-    // Fetch user information
+    // First try to get data from localStorage
+    const storedUserData = localStorage.getItem('userData');
+    if (storedUserData) {
+      const parsedData = JSON.parse(storedUserData);
+      setUserInfo(parsedData);
+      setEditedInfo(parsedData);
+    }
+
+    // Then fetch fresh data from server
     fetch('http://localhost:5001/user/profile', {
       headers: {
         Authorization: `Bearer ${token}`
@@ -67,6 +75,8 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
         if (data.success) {
           setUserInfo(data.data);
           setEditedInfo(data.data);
+          // Update localStorage with fresh data
+          localStorage.setItem('userData', JSON.stringify(data.data));
         }
       })
       .catch(console.error);
@@ -96,6 +106,8 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
       const data = await response.json();
       if (data.success) {
         setUserInfo(editedInfo);
+        // Update localStorage with new data
+        localStorage.setItem('userData', JSON.stringify(editedInfo));
         setIsEditing(false);
       } else {
         alert('Failed to update profile');

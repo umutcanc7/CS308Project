@@ -258,29 +258,37 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
       <div className="reviews-section">
         <h2>Customer Reviews</h2>
         {reviews.length ? (
-          <div className="reviews-list">
-            {reviews.map(r => (
-              <div key={r._id} className="review-card">
-                <div className="review-header">
-                  <span className="reviewer-name">{r.userName}</span>
-                  <div className="review-rating">
-                    {Array.from({ length: 5 }, (_, i) => (
-                      <span
-                        key={i}
-                        className={`star ${i < r.rating ? 'filled' : ''}`}
-                      >
-                        ★
-                      </span>
-                    ))}
+          <>
+            <div className="average-rating">
+              <span className="star-symbol">★</span>
+              <span className="rating-number">
+                {(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)}
+              </span>
+            </div>
+            <div className="reviews-list">
+              {reviews.map(r => (
+                <div key={r._id} className="review-card">
+                  <div className="review-header">
+                    <span className="reviewer-name">{r.userName}</span>
+                    <div className="review-rating">
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <span
+                          key={i}
+                          className={`star ${i < r.rating ? 'filled' : ''}`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
                   </div>
+                  <p className="review-comment">{r.comment}</p>
+                  <span className="review-date">
+                    {new Date(r.date).toLocaleDateString()}
+                  </span>
                 </div>
-                <p className="review-comment">{r.comment}</p>
-                <span className="review-date">
-                  {new Date(r.date).toLocaleDateString()}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </>
         ) : (
           <p className="no-reviews">Be the first to review this product</p>
         )}

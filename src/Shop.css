@@ -376,3 +376,29 @@
   font-size: 12px;
   font-weight: bold;
 }
+
+.product-rating {
+  margin: 8px 0;
+  text-align: center;
+}
+
+.stars {
+  color: #ddd;
+  font-size: 18px;
+  margin-right: 5px;
+}
+
+.star.filled {
+  color: #ffd700;
+}
+
+.rating-count {
+  font-size: 14px;
+  color: #666;
+  margin-left: 5px;
+}
+
+.no-ratings {
+  color: #999;
+  font-size: 14px;
+}

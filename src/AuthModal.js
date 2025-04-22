@@ -60,53 +60,153 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn,
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Basic validation
+      if (!email || !password) {
+        alert("Please fill in all fields");
+        return;
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address");
+        return;
+      }
+
       const response = await fetch("http://localhost:5001/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mail_adress: email, password, rememberMe }),
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ 
+          mail_adress: email.trim(), 
+          password: password.trim(), 
+          rememberMe 
+        }),
       });
 
       const data = await response.json();
-      if (response.ok) {
+      
+      if (response.ok && data.success) {
         localStorage.setItem("token", data.token);
-        alert("Login Successful");
-        setIsSignedIn(true);
-        await mergeCart(data.token);
-        await refreshCart();
-        resetForm();
-        onClose();
-        navigate("/shop");
+        
+        try {
+          // Fetch user profile data
+          const profileResponse = await fetch("http://localhost:5001/user/profile", {
+            headers: {
+              "Authorization": `Bearer ${data.token}`,
+              "Accept": "application/json"
+            }
+          });
+          
+          if (!profileResponse.ok) {
+            throw new Error("Failed to fetch profile data");
+          }
+          
+          const profileData = await profileResponse.json();
+          if (profileData.success) {
+            localStorage.setItem("userData", JSON.stringify(profileData.data));
+          }
+
+          alert("Login Successful");
+          setIsSignedIn(true);
+          await mergeCart(data.token);
+          await refreshCart();
+          resetForm();
+          onClose();
+          navigate("/shop");
+        } catch (profileError) {
+          console.error("Profile fetch error:", profileError);
+          // Still proceed with login even if profile fetch fails
+          setIsSignedIn(true);
+          await mergeCart(data.token);
+          await refreshCart();
+          resetForm();
+          onClose();
+          navigate("/shop");
+        }
       } else {
-        console.error("Login error:", data);
-        alert(data.message || "An error occurred during login");
+        // Handle specific error messages from the server
+        const errorMessage = data.message || "Invalid email or password";
+        alert(errorMessage);
       }
     } catch (error) {
-      console.error("Error during login fetch:", error);
-      alert("An error occurred during login");
+      console.error("Login error:", error);
+      if (!navigator.onLine) {
+        alert("Please check your internet connection");
+      } else {
+        alert("Server error. Please try again later");
+      }
     }
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
     try {
+      // Basic validation
+      if (!fullName || !email || !password || !confirmPassword) {
+        alert("Please fill in all required fields");
+        return;
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters long");
+        return;
+      }
+
       const response = await fetch("http://localhost:5001/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
-          name: fullName,
-          mail_adress: email,
-          password,
-          phone_number: phone,
+          name: fullName.trim(),
+          mail_adress: email.trim(),
+          password: password.trim(),
+          phone_number: phone.trim(),
         }),
       });
 
       const data = await response.json();
-      if (response.ok) {
+      
+      if (response.ok && data.success) {
         localStorage.setItem("token", data.token);
+
+        try {
+          const profileResponse = await fetch("http://localhost:5001/user/profile", {
+            headers: {
+              "Authorization": `Bearer ${data.token}`,
+              "Accept": "application/json"
+            }
+          });
+          
+          if (!profileResponse.ok) {
+            throw new Error("Failed to fetch profile data");
+          }
+          
+          const profileData = await profileResponse.json();
+          if (profileData.success) {
+            localStorage.setItem("userData", JSON.stringify(profileData.data));
+          }
+        } catch (profileError) {
+          console.error("Profile fetch error:", profileError);
+          // Continue with registration even if profile fetch fails
+        }
+
         alert("User registered successfully!");
         setIsSignedIn(true);
         await mergeCart(data.token);
@@ -115,12 +215,16 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn,
         onClose();
         navigate("/shop");
       } else {
-        console.error("Sign up error:", data);
-        alert(data.message || "An error occurred during sign up");
+        const errorMessage = data.message || "Registration failed. Please try again.";
+        alert(errorMessage);
       }
     } catch (error) {
-      console.error("Error during sign up fetch:", error);
-      alert("An error occurred during sign up");
+      console.error("Registration error:", error);
+      if (!navigator.onLine) {
+        alert("Please check your internet connection");
+      } else {
+        alert("Server error. Please try again later");
+      }
     }
   };
 

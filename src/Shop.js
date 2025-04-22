@@ -1,4 +1,3 @@
-// src/Shop.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Menu from "./Menu";
@@ -16,32 +15,30 @@ function Shop({ openModal, isSignedIn, signOut }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  // Add function to fetch wishlist count
-  const fetchWishlistCount = async () => {
-    if (!isSignedIn) {
-      setWishlistCount(0);
-      return;
-    }
+  useEffect(() => {
+    fetch("http://localhost:5001/products/sort?by=name&order=asc")
+      .then(res => res.json())
+      .then(data => data.success && setProducts(data.data))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    fetch("http://localhost:5001/products/categories")
+      .then(res => res.json())
+      .then(data => data.success && setCategories(data.data))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (!isSignedIn) return setWishlistCount(0);
 
     const token = localStorage.getItem("token");
-    try {
-      const response = await fetch("http://localhost:5001/wishlist", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setWishlistCount(data.data.length);
-      }
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-    }
-  };
-
-  // Add useEffect to fetch wishlist count
-  useEffect(() => {
-    fetchWishlistCount();
+    fetch("http://localhost:5001/wishlist", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => data.success && setWishlistCount(data.data.length))
+      .catch(console.error);
   }, [isSignedIn]);
 
   const getImage = (imageName) => {
@@ -52,91 +49,58 @@ function Shop({ openModal, isSignedIn, signOut }) {
     }
   };
 
-  useEffect(() => {
-    const [by, order] = sortOption.split("_");
-    fetch(`http://localhost:5001/products/sort?by=${by}&order=${order}`)
-      .then((r) => r.json())
-      .then((d) => d.success && setProducts(d.data))
-      .catch(console.error);
-  }, [sortOption]);
-
-  useEffect(() => {
-    fetch("http://localhost:5001/products/categories")
-      .then((r) => r.json())
-      .then((d) => d.success && setCategories(d.data))
-      .catch(console.error);
-  }, []);
-
   const handleAddToCart = async (product) => {
-    try {
-      // Get current cart quantity for this product
-      const existingItem = cart.find(item => item.id === product._id);
-      const currentCartQuantity = existingItem?.quantity || 0;
-      
-      // Check if adding one more would exceed stock
-      if (currentCartQuantity + 1 > product.stock) {
-        alert(`❌ Cannot add more items. Only ${product.stock} available in stock.`);
-        return;
-      }
+    const existing = cart.find(item => item.id === product._id);
+    const quantity = existing?.quantity || 0;
+    if (quantity + 1 > product.stock) return alert(`❌ Only ${product.stock} in stock.`);
 
-      if (existingItem) {
-        // If item exists, update its quantity
-        await updateQuantity(product._id, currentCartQuantity + 1);
-      } else {
-        // If item doesn't exist, add it new
-        await addToCart({ ...product, id: product._id, image: product.image1 });
-      }
-      alert("✅ Product added to cart successfully!");
-      console.log("✅ Added to cart:", product.name);
-    } catch (error) {
-      console.error("Failed to add to cart:", error);
-      alert("❌ Failed to add product to cart");
-    }
+    if (existing) await updateQuantity(product._id, quantity + 1);
+    else await addToCart({ ...product, id: product._id, image: product.image1 });
+
+    alert("✅ Product added to cart!");
   };
 
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = products.filter(p => {
     const q = searchQuery.toLowerCase();
     const matchSearch = p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q);
     const matchCat = selectedCategory === "All" || p.category === selectedCategory;
     return matchSearch && matchCat;
   });
 
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    const [by, order] = sortOption.split("_");
+  
+    let valA = a[by];
+    let valB = b[by];
+  
+    if (by === "averageRating") {
+      valA = parseFloat(valA) || 0;
+      valB = parseFloat(valB) || 0;
+    } else if (by === "name") {
+      valA = valA.toLowerCase();
+      valB = valB.toLowerCase();
+    }
+  
+    if (order === "asc") return valA > valB ? 1 : -1;
+    return valA < valB ? 1 : -1;
+  });
+
   return (
     <div className="shop-page">
       <Menu />
-
-      {/* Sidebar with emoji text buttons */}
       <div className="auth-links">
         {isSignedIn ? (
           <>
-            <div className="auth-button" onClick={() => navigate("/wishlist")}>
-              ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/cart")}>
-              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/profile")}>
-              👤 Profile
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/purchased-products")}>
-              📦 My Purchases
-            </div>
-
-            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>
-              🚪 Sign Out
-            </div>
+            <div className="auth-button" onClick={() => navigate("/wishlist")}>❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</div>
+            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+            <div className="auth-button" onClick={() => navigate("/profile")}>👤 Profile</div>
+            <div className="auth-button" onClick={() => navigate("/purchased-products")}>📦 My Purchases</div>
+            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>🚪 Sign Out</div>
           </>
         ) : (
           <>
-            <div className="auth-button" onClick={() => navigate("/cart")}>
-              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-            </div>
-            <div className="auth-button" onClick={() => openModal("login")}>
-              🔐 Login / Sign Up
-            </div>
+            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+            <div className="auth-button" onClick={() => openModal("login")}>🔐 Login / Sign Up</div>
           </>
         )}
       </div>
@@ -144,54 +108,49 @@ function Shop({ openModal, isSignedIn, signOut }) {
       <header className="shop-header">
         <h2>Our Collection</h2>
         <p>Discover our exclusive range of apparel and accessories.</p>
-
         <div className="shop-controls">
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <option value="All">All Categories</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </option>
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
             ))}
           </select>
-
           <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
             <option value="name_asc">A to Z</option>
             <option value="name_desc">Z to A</option>
             <option value="price_asc">Price: Low to High</option>
             <option value="price_desc">Price: High to Low</option>
+            <option value="averageRating_asc">Rating: Low to High</option>
+            <option value="averageRating_desc">Rating: High to Low</option>
           </select>
-
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          <input type="text" placeholder="Search..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
         </div>
       </header>
 
       <section className="products">
-        {filteredProducts.map((p) => (
+        {sortedProducts.map(p => (
           <div key={p._id} className="product-card">
-            <div
-              className="product-image-container"
-              onClick={() => navigate(`/product/${p._id}`)}
-              style={{ cursor: "pointer" }}
-            >
+            <div className="product-image-container" onClick={() => navigate(`/product/${p._id}`)} style={{ cursor: "pointer" }}>
               <img src={getImage(p.image1)} alt={p.name} className="product-image" />
             </div>
-            <h3 onClick={() => navigate(`/product/${p._id}`)} style={{ cursor: "pointer" }}>
-              {p.name}
-            </h3>
+            <h3 onClick={() => navigate(`/product/${p._id}`)} style={{ cursor: "pointer" }}>{p.name}</h3>
             <p className="product-price">${p.price.toFixed(2)}</p>
             <p className="product-description">{p.category}</p>
-
-            <button
-              className="add-to-cart-btn"
-              onClick={() => handleAddToCart(p)}
-              disabled={p.stock < 1}
-            >
+            <div className="product-rating">
+              {p.averageRating ? (
+                <div>
+                  <span className="stars">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span key={i} className={`star ${i < Math.round(p.averageRating) ? 'filled' : ''}`}>★</span>
+                    ))}
+                  </span>
+                  <span className="rating-count">({p.averageRating.toFixed(1)})</span>
+                </div>
+              ) : (
+                <span className="no-ratings">No reviews yet</span>
+              )}
+            </div>
+            <button className="add-to-cart-btn" onClick={() => handleAddToCart(p)} disabled={p.stock < 1}>
               {p.stock < 1 ? "OUT OF STOCK" : "Add to Cart"}
             </button>
           </div>
