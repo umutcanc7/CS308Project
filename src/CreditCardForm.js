@@ -1,8 +1,23 @@
+// src/CreditCardForm.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";
-import { recordPurchase } from "./api/purchase";
 import "./CreditCardForm.css";
+
+/* --------------------------------------------------------------------------
+   🔗  Figure out where the backend lives
+   -------------------------------------------------------------------------- */
+const API_BASE = (() => {
+  // 1️⃣  Prefer an explicit env variable if you ever add one
+  const envBase = process.env.REACT_APP_API_BASE_URL;
+  if (envBase && envBase.trim()) return envBase.replace(/\/$/, ""); // strip trailing /
+
+  // 2️⃣  If we’re on localhost:3000 (CRA) assume backend on :5001
+  if (window.location.hostname === "localhost") return "http://localhost:5001";
+
+  // 3️⃣  Otherwise same origin (works in production when the API is served by Nginx)
+  return "";
+})();
 
 function CreditCardForm() {
   const navigate = useNavigate();
@@ -13,49 +28,79 @@ function CreditCardForm() {
   const [expiryDate, setExpiryDate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  /* ------------------------------------------------------------------------
+     🧾  Handle the Pay-Now click
+     ------------------------------------------------------------------------ */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage("");
 
-    // Basic card field checks (fake validation)
+    // Simple demo-level validation
     if (!cardNumber || !cvv || !expiryDate) {
       setErrorMessage("Please fill out all fields.");
       return;
     }
-
     if (cart.length === 0) {
       setErrorMessage("Your cart is empty.");
       return;
     }
 
-    try {
-      let successCount = 0;
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMessage("You must be logged in to pay.");
+      return;
+    }
 
-      for (const item of cart) {
-        const totalPrice = item.price * item.quantity;
-        const response = await recordPurchase(item.id, item.quantity, totalPrice);
-        console.log("Purchase Response for", item.name, "→", response); // 👈 ADD THIS LINE
-      
-        if (response.success) {
-          localStorage.setItem("orderId", response.orderId);  // optional
+    let successCount = 0;
+
+    for (const item of cart) {
+      const productId = item.id || item._id;      // tolerate either key
+      const totalPrice = item.price * item.quantity;
+
+      try {
+        const res = await fetch(`${API_BASE}/purchase`, {
+          method: "POST",
+          mode: "cors",                            // CORS pre-flight OK
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId,
+            quantity: item.quantity,
+            totalPrice,
+          }),
+        });
+
+        // If the backend sends HTML (e.g. 404 page) this will throw
+        const data = await res.json();
+        console.log("Purchase response for", item.name, "→", data);
+
+        if (res.ok && data.success) {
+          localStorage.setItem("orderId", data.orderId); // optional
           successCount++;
         } else {
-          setErrorMessage(`Failed to process ${item.name}: ${response.error}`);
+          setErrorMessage(
+            `Failed to process ${item.name}: ${data.error || "Unknown error"}`
+          );
         }
+      } catch (err) {
+        console.error(`Network/parse error for ${item.name}:`, err);
+        setErrorMessage(
+          `Network error while processing ${item.name}. Please make sure the server is running on ${API_BASE || "the same host"} and try again.`
+        );
       }
+    }
 
-      if (successCount === cart.length) {
-        clearCart();  // Empty the cart on successful payment
-        navigate("/receipt");
-      } else {
-        setErrorMessage("Some items could not be processed.");
-      }
-    } catch (error) {
-      console.error("Error during purchase:", error);
-      setErrorMessage("Something went wrong. Please try again.");
+    if (successCount === cart.length) {
+      clearCart();
+      navigate("/receipt");
     }
   };
 
+  /* ------------------------------------------------------------------------
+     💳  Render
+     ------------------------------------------------------------------------ */
   return (
     <div className="credit-card-form">
       <h2>Enter Credit Card Information</h2>

@@ -1,7 +1,11 @@
+// App.js
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { CartProvider } from "./CartContext";
+
 import AuthModal from "./AuthModal";
+import UserBar from "./UserBar";          // ⬅️ NEW import
+
 import Home from "./Home";
 import Shop from "./Shop";
 import Cart from "./Cart";
@@ -11,8 +15,9 @@ import WishlistPage from "./WishlistPage";
 import PurchasedProductsPage from "./PurchasedProductsPage";
 import ProductReviewsPage from "./ProductReviewsPage";
 import CreditCardForm from "./CreditCardForm";
-import ProfilePage from './ProfilePage';
-import Receipt from "./Receipt"; // Adjust path if needed
+import ProfilePage from "./ProfilePage";
+import Receipt from "./Receipt";
+
 import "./App.css";
 
 function App() {
@@ -21,23 +26,21 @@ function App() {
   const [isSignedIn, setIsSignedIn] = useState(false);
   const navigate = useNavigate();
 
+  /* --------------------------- Auth state sync --------------------------- */
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) {
-      setIsSignedIn(true);
-    }
+    if (token) setIsSignedIn(true);
   }, []);
 
   useEffect(() => {
-    const handleStorageChange = (event) => {
-      if (event.key === "token" && !event.newValue) {
-        setIsSignedIn(false);
-      }
+    const handleStorageChange = (e) => {
+      if (e.key === "token" && !e.newValue) setIsSignedIn(false);
     };
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
+  /* --------------------------- Modal helpers ---------------------------- */
   const openModal = (tab) => {
     setModalTab(tab);
     setIsModalOpen(true);
@@ -49,24 +52,47 @@ function App() {
     navigate("/home");
   };
 
+  /* -------------------------------- Render ------------------------------ */
   return (
     <CartProvider>
       <div className="App">
         <Routes>
           <Route path="/" element={<Navigate to="/home" replace />} />
-          <Route path="/home" element={<Home openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />} />
-          <Route path="/shop" element={<Shop openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />} />
+          <Route
+            path="/home"
+            element={<Home openModal={openModal} />}
+          />
+          <Route
+            path="/shop"
+            element={<Shop isSignedIn={isSignedIn} />}
+          />
           <Route path="/cart" element={<Cart />} />
           <Route path="/review/:productId" element={<ReviewPage />} />
-          <Route path="/product/:productId" element={<ProductPage openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />} />
-          <Route path="/wishlist" element={<WishlistPage isSignedIn={isSignedIn} signOut={signOut} />} />
-          <Route path="/purchased-products" element={<PurchasedProductsPage isSignedIn={isSignedIn} signOut={signOut} />} />
+          <Route
+            path="/product/:productId"
+            element={<ProductPage openModal={openModal} isSignedIn={isSignedIn} signOut={signOut} />}
+          />
+          <Route
+            path="/wishlist"
+            element={<WishlistPage isSignedIn={isSignedIn} signOut={signOut} />}
+          />
+          <Route
+            path="/purchased-products"
+            element={<PurchasedProductsPage isSignedIn={isSignedIn} signOut={signOut} />}
+          />
           <Route path="/product-reviews/:productId" element={<ProductReviewsPage />} />
           <Route path="/credit-card-form" element={<CreditCardForm />} />
-          <Route path="/profile" element={<ProfilePage isSignedIn={isSignedIn} signOut={signOut} />} />
+          <Route
+            path="/profile"
+            element={<ProfilePage isSignedIn={isSignedIn} signOut={signOut} />}
+          />
           <Route path="/receipt" element={<Receipt />} />
         </Routes>
 
+        {/* 🌟 Global user bar */}
+        <UserBar isSignedIn={isSignedIn} openModal={openModal} signOut={signOut} />
+
+        {/* 🔐 Auth modal */}
         <AuthModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}

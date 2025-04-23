@@ -1,179 +1,105 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Menu from './Menu';
-import './ProfilePage.css';
-import { useCart } from './CartContext';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Menu from "./Menu";
+import "./ProfilePage.css";
 
-function ProfilePage({ isSignedIn, signOut, openModal }) {
+function ProfilePage({ isSignedIn, signOut }) {
   const navigate = useNavigate();
-  const { getTotalItems, clearCart } = useCart();
-  const [wishlistCount, setWishlistCount] = useState(0);
+
+  /* ----------------------------- state ----------------------------- */
   const [userInfo, setUserInfo] = useState({
-    name: '',
-    email: '',
-    phoneNumber: '',
-    address: ''
+    name: "",
+    email: "",
+    phoneNumber: "",
+    address: "",
   });
   const [isEditing, setIsEditing] = useState(false);
-  const [editedInfo, setEditedInfo] = useState({...userInfo});
+  const [editedInfo, setEditedInfo] = useState({ ...userInfo });
 
-  // Add function to fetch wishlist count
-  const fetchWishlistCount = async () => {
+  /* ----------------------- load / refresh data ---------------------- */
+  useEffect(() => {
     if (!isSignedIn) {
-      setWishlistCount(0);
+      navigate("/");
       return;
     }
 
     const token = localStorage.getItem("token");
-    try {
-      const response = await fetch("http://localhost:5001/wishlist", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.success) {
-        setWishlistCount(data.data.length);
-      }
-    } catch (error) {
-      console.error("Error fetching wishlist:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchWishlistCount();
-  }, [isSignedIn]);
-
-  useEffect(() => {
-    if (!isSignedIn) {
-      navigate('/');
-      return;
-    }
-
-    const token = localStorage.getItem('token');
     if (!token) {
       signOut();
       return;
     }
 
-    // First try to get data from localStorage
-    const storedUserData = localStorage.getItem('userData');
-    if (storedUserData) {
-      const parsedData = JSON.parse(storedUserData);
-      setUserInfo(parsedData);
-      setEditedInfo(parsedData);
+    /* cached copy first */
+    const cached = localStorage.getItem("userData");
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      setUserInfo(parsed);
+      setEditedInfo(parsed);
     }
 
-    // Then fetch fresh data from server
-    fetch('http://localhost:5001/user/profile', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    /* fresh copy from server */
+    fetch("http://localhost:5001/user/profile", {
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         if (data.success) {
           setUserInfo(data.data);
           setEditedInfo(data.data);
-          // Update localStorage with fresh data
-          localStorage.setItem('userData', JSON.stringify(data.data));
+          localStorage.setItem("userData", JSON.stringify(data.data));
         }
       })
       .catch(console.error);
   }, [navigate, isSignedIn, signOut]);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
+  /* ---------------------------- handlers ---------------------------- */
+  const handleEdit   = () => setIsEditing(true);
   const handleCancel = () => {
     setIsEditing(false);
-    setEditedInfo({...userInfo});
+    setEditedInfo({ ...userInfo });
   };
 
   const handleSave = async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     try {
-      const response = await fetch('http://localhost:5001/user/profile', {
-        method: 'PUT',
+      const res = await fetch("http://localhost:5001/user/profile", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(editedInfo)
+        body: JSON.stringify(editedInfo),
       });
-      
-      const data = await response.json();
+      const data = await res.json();
       if (data.success) {
         setUserInfo(editedInfo);
-        // Update localStorage with new data
-        localStorage.setItem('userData', JSON.stringify(editedInfo));
+        localStorage.setItem("userData", JSON.stringify(editedInfo));
         setIsEditing(false);
       } else {
-        alert('Failed to update profile');
+        alert("Failed to update profile");
       }
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('Failed to update profile');
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      alert("Failed to update profile");
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditedInfo(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const handleChange = (e) =>
+    setEditedInfo((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  if (!isSignedIn) {
-    return null;
-  }
+  if (!isSignedIn) return null;
 
+  /* ----------------------------- render ----------------------------- */
   return (
     <div className="profile-page">
       <Menu />
 
-      {/* Navigation Bar */}
-      <div className="auth-links">
-        {isSignedIn ? (
-          <>
-            <div className="auth-button" onClick={() => navigate("/wishlist")}>
-              ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/cart")}>
-              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/profile")}>
-              👤 Profile
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/purchased-products")}>
-              📦 My Purchases
-            </div>
-
-            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>
-              🚪 Sign Out
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="auth-button" onClick={() => navigate("/cart")}>
-              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-            </div>
-            <div className="auth-button" onClick={() => openModal("login")}>
-              🔐 Login / Sign Up
-            </div>
-          </>
-        )}
-      </div>
-
       <div className="profile-container">
         <h1>My Profile</h1>
+
         <div className="profile-content">
           {isEditing ? (
+            /* ---------- edit form ---------- */
             <div className="profile-form">
               <div className="form-group">
                 <label>Name:</label>
@@ -184,6 +110,7 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
                   onChange={handleChange}
                 />
               </div>
+
               <div className="form-group">
                 <label>Email:</label>
                 <input
@@ -193,6 +120,7 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
                   onChange={handleChange}
                 />
               </div>
+
               <div className="form-group">
                 <label>Phone Number:</label>
                 <input
@@ -202,6 +130,7 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
                   onChange={handleChange}
                 />
               </div>
+
               <div className="form-group">
                 <label>Address:</label>
                 <textarea
@@ -210,12 +139,18 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
                   onChange={handleChange}
                 />
               </div>
+
               <div className="button-group">
-                <button className="save-button" onClick={handleSave}>Save</button>
-                <button className="cancel-button" onClick={handleCancel}>Cancel</button>
+                <button className="save-button" onClick={handleSave}>
+                  Save
+                </button>
+                <button className="cancel-button" onClick={handleCancel}>
+                  Cancel
+                </button>
               </div>
             </div>
           ) : (
+            /* ---------- view-only mode ---------- */
             <div className="profile-info">
               <div className="info-group">
                 <label>Name:</label>
@@ -227,13 +162,16 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
               </div>
               <div className="info-group">
                 <label>Phone Number:</label>
-                <p>{userInfo.phoneNumber || 'Not provided'}</p>
+                <p>{userInfo.phoneNumber || "Not provided"}</p>
               </div>
               <div className="info-group">
                 <label>Address:</label>
-                <p>{userInfo.address || 'Not provided'}</p>
+                <p>{userInfo.address || "Not provided"}</p>
               </div>
-              <button className="edit-button" onClick={handleEdit}>Edit Profile</button>
+
+              <button className="edit-button" onClick={handleEdit}>
+                Edit Profile
+              </button>
             </div>
           )}
         </div>
@@ -242,4 +180,4 @@ function ProfilePage({ isSignedIn, signOut, openModal }) {
   );
 }
 
-export default ProfilePage; 
+export default ProfilePage;
