@@ -1,7 +1,6 @@
 // Shop.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-// import Menu from "./Menu";
 import "./Shop.css";
 import { useCart } from "./CartContext";
 
@@ -63,7 +62,8 @@ function Shop({ isSignedIn }) {
     const matchSearch =
       p.name.toLowerCase().includes(q) ||
       p.category.toLowerCase().includes(q);
-    const matchCat = selectedCategory === "All" || p.category === selectedCategory;
+    const matchCat =
+      selectedCategory === "All" || p.category === selectedCategory;
     return matchSearch && matchCat;
   });
 
@@ -87,8 +87,6 @@ function Shop({ isSignedIn }) {
   /* --------------------------------- Render --------------------------------- */
   return (
     <div className="shop-page">
-      {/* <Menu /> */}
-
       <header className="shop-header">
         <h2>Our Collection</h2>
         <p>Discover our exclusive range of apparel and accessories.</p>

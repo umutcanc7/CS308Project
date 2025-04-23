@@ -1,182 +1,89 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow: hidden;
+/* Home.css – scroll-bar absolutely flush right */
+
+html,body{ margin:0; padding:0; height:100%; overflow:hidden; }
+
+.home{
+  background:#F0EAD6;
+  height:100vh;
+  width:100vw;            /* fill viewport so bar sits at outer edge */
+  overflow-y:scroll;      /* vertical scroll only */
+  overflow-x:hidden;
+  scroll-snap-type:y mandatory;
+
+  padding-right:0;
+  box-sizing:border-box;
 }
 
-.home {
-  background-color: #F0EAD6;
-  width: 100%;
-  height: 100vh;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  padding-right: 150px;
-  box-sizing: content-box;
-}
-
-/* Scrollbar */
-.home::-webkit-scrollbar {
-  width: 12px;
-}
-.home::-webkit-scrollbar-track {
-  background: transparent;
-}
+/* ---------- scroll-bar ---------- */
+.home::-webkit-scrollbar       { width:8px; }
+.home::-webkit-scrollbar-track { background:transparent; }
 .home::-webkit-scrollbar-thumb {
-  background-color: #ccc;
-  border-radius: 6px;
+  background:#999;
+  border-radius:6px;
+  border:none;
 }
+.home::-webkit-scrollbar-thumb:hover{ background:#666; }
 
-/* Top Bar */
-.top-bar {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  background-color: #F0EAD6;
-  z-index: 999;
+/* ---------- Top bar ---------- */
+.top-bar{
+  position:fixed; top:0; width:100%;
+  padding:1rem 2rem; display:flex; justify-content:space-between;
+  background:#F0EAD6; z-index:999;
 }
-.auth-links {
-  font-size: 16px;
-  color: #000;
-  cursor: pointer;
-}
-.auth-links span:hover {
-  text-decoration: underline;
-}
+.auth-links{ font-size:16px; color:#000; cursor:pointer; }
+.auth-links span:hover{ text-decoration:underline; }
 
-/* Logo Section */
+/* ---------- Sections ---------- */
 .fullscreen-logo-wrapper,
-.hero-section {
-  position: relative;
-  width: 100%;
-  height: 100vh;
-  scroll-snap-align: start;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
+.hero-section{
+  position:relative; width:100%; height:100vh;
+  scroll-snap-align:start;
+  display:flex; flex-direction:column; justify-content:center; align-items:center;
 }
-.fullscreen-logo {
-  width: 50vw;
-  height: auto;
-  max-height: none;
-  object-fit: contain;
+.fullscreen-logo{ width:50vw; height:auto; object-fit:contain; }
+
+.hero-section{
+  display:grid; grid-template-columns:1fr 2fr; gap:2rem;
+  padding:4rem 2rem; max-width:1200px; margin:0 auto;
 }
 
-/* Hero Section */
-.hero-section {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 2rem;
-  padding: 4rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+.hero-content{ display:flex; flex-direction:column; justify-content:center; }
+.hero-content h1{ font-size:3.5rem; line-height:1; margin-bottom:1rem; font-weight:700; }
+.hero-content .category-dropdown{
+  font-size:1rem; padding:.5rem; margin-bottom:2rem;
+  border-radius:4px; border:1px solid #ccc; background:#fff;
 }
 
-.hero-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+.go-to-shop{
+  display:inline-flex; align-items:center; gap:.5rem;
+  background:#000; color:#F0EAD6;
+  border:none; padding:.75rem 1.5rem; cursor:pointer; font-size:.9rem;
+  transition:all .3s ease;
+}
+.go-to-shop:hover{ background:#1a1a1a; transform:translateY(-2px); }
+.arrow{ font-size:1rem; color:#F0EAD6; }
+
+/* ---------- Product display ---------- */
+.hero-product-display{
+  position:relative; width:100%; max-width:600px;
+  display:flex; flex-direction:column; align-items:center;
 }
 
-.hero-content h1 {
-  font-size: 3.5rem;
-  line-height: 1;
-  margin-bottom: 1rem;
-  font-weight: 700;
+.product-card{
+  background:#fff; border-radius:8px; padding:1rem;
+  text-align:center; box-shadow:0 2px 6px rgba(0,0,0,.1);
+  width:100%;
 }
+.product-card img.product-image{
+  width:100%; height:auto; max-height:300px; object-fit:contain; border-radius:8px;
+}
+.product-card h3{ margin-top:1rem; font-size:1.25rem; color:#000; }
+.product-card p { font-size:1rem; color:#555; }
 
-.hero-content .category-dropdown {
-  font-size: 1rem;
-  padding: 0.5rem;
-  margin-bottom: 2rem;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: white;
+.slider-controls{ margin-top:1rem; display:flex; gap:1rem; }
+.slider-controls button{
+  background:#fff; border:1px solid #ccc; width:36px; height:36px; border-radius:50%;
+  cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center;
+  transition:transform .2s ease;
 }
-
-.go-to-shop {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  background-color: #000;
-  color: #F0EAD6;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.3s ease;
-}
-.go-to-shop:hover {
-  background-color: #1a1a1a;
-  transform: translateY(-2px);
-}
-.arrow {
-  font-size: 1rem;
-  color: #F0EAD6;
-}
-
-/* Product Display */
-.hero-product-display {
-  position: relative;
-  width: 100%;
-  max-width: 600px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.product-card {
-  background: white;
-  border-radius: 8px;
-  padding: 1rem;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  width: 100%;
-}
-
-.product-card img.product-image {
-  width: 100%;
-  height: auto;
-  max-height: 300px;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-.product-card h3 {
-  margin-top: 1rem;
-  font-size: 1.25rem;
-  color: #000;
-}
-
-.product-card p {
-  font-size: 1rem;
-  color: #555;
-}
-
-.slider-controls {
-  margin-top: 1rem;
-  display: flex;
-  gap: 1rem;
-}
-
-.slider-controls button {
-  background: white;
-  border: 1px solid #ccc;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-}
-.slider-controls button:hover {
-  transform: scale(1.1);
-}
+.slider-controls button:hover{ transform:scale(1.1); }
