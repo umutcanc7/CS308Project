@@ -1,53 +1,46 @@
-import React, { useEffect, useState, useRef } from "react";
+// src/UserBar.js (or Menu.js)
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext";
-import "./Menu.css";               // reuse styling + sliding menu
-                                       
-/**
- * Single global bar with:
- *   • hamburger (opens sliding menu)
- *   • wishlist / cart / profile / purchases / sign-out  OR  login
- */
+import "./Menu.css";
+
 function UserBar({ isSignedIn, openModal, signOut }) {
-  const navigate                  = useNavigate();
+  const navigate = useNavigate();
   const { getTotalItems, clearCart } = useCart();
   const [wishlistCount, setWishlistCount] = useState(0);
 
-  /* ---------- slide-menu state ---------- */
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef(null);
-
-  /* close menu when clicking outside */
+  // Initial and global wishlist count fetch
   useEffect(() => {
-    function handleClick(e) {
-      if (menuOpen && menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false);
-      }
+    if (!isSignedIn) {
+      setWishlistCount(0);
+      return;
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [menuOpen]);
 
-  /* ---------- wishlist count ---------- */
-  useEffect(() => {
-    if (!isSignedIn) { setWishlistCount(0); return; }
-    const token = localStorage.getItem("token");
-    fetch("http://localhost:5001/wishlist", {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => data.success && setWishlistCount(data.data.length))
-      .catch(console.error);
+    const fetchWishlist = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const res = await fetch("http://localhost:5001/wishlist", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) setWishlistCount(data.data.length);
+      } catch (err) {
+        console.error("Failed to fetch wishlist:", err);
+      }
+    };
+
+    fetchWishlist();
+
+    // ✅ GLOBAL METHOD for updating wishlist count elsewhere
+    window.updateWishlistCount = fetchWishlist;
   }, [isSignedIn]);
 
-  /* ---------- inline styles ---------- */
   const barStyle = {
     position: "fixed",
-    top: 0,                // flush against top
+    top: 0,
     left: 0,
     right: 0,
     zIndex: 1000,
-
     display: "flex",
     alignItems: "center",
     gap: "16px",
@@ -70,62 +63,32 @@ function UserBar({ isSignedIn, openModal, signOut }) {
     transition: "background .2s",
   };
 
-  /* ------------------------------ UI ------------------------------ */
   return (
     <>
-      {/* ---------- TOP BAR ---------- */}
       <div style={barStyle}>
-        {/* Hamburger */}
-        <div className="hamburger-icon" onClick={() => setMenuOpen(p => !p)}>
-          <span></span><span></span><span></span>
+        {/* New buttons on the left */}
+        <div style={{ display: "flex", gap: "10px" }}>
+          <div style={btnStyle} onClick={() => navigate("/home")}>🏠 Home</div>
+          <div style={btnStyle} onClick={() => navigate("/shop")}>🛍 Shop</div>
         </div>
 
-        {/* buttons (flex-wrap keeps them neat on mobile) */}
-        <div style={{display:"flex",flexWrap:"wrap",gap:"16px",marginLeft:"auto"}}>
+        {/* Buttons */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginLeft: "auto" }}>
           {isSignedIn ? (
             <>
-              <div style={btnStyle} onClick={() => navigate("/wishlist")}>
-                ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
-              </div>
-              <div style={btnStyle} onClick={() => navigate("/cart")}>
-                🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-              </div>
-              <div style={btnStyle} onClick={() => navigate("/profile")}>
-                👤 Profile
-              </div>
-              <div style={btnStyle} onClick={() => navigate("/purchased-products")}>
-                📦 My Purchases
-              </div>
-              <div
-                style={{ ...btnStyle, background:"#ffebee", borderColor:"#ff6b6b" }}
-                onClick={() => { signOut(); clearCart(); }}
-              >
-                🚪 Sign&nbsp;Out
-              </div>
+              <div style={btnStyle} onClick={() => navigate("/wishlist")}>❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</div>
+              <div style={btnStyle} onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+              <div style={btnStyle} onClick={() => navigate("/profile")}>👤 Profile</div>
+              <div style={btnStyle} onClick={() => navigate("/purchased-products")}>📦 My Purchases</div>
+              <div style={{ ...btnStyle, background: "#ffebee", borderColor: "#ff6b6b" }} onClick={() => { signOut(); clearCart(); }}>🚪 Sign Out</div>
             </>
           ) : (
             <>
-              <div style={btnStyle} onClick={() => navigate("/cart")}>
-                🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-              </div>
-              <div style={btnStyle} onClick={() => openModal("login")}>
-                🔐 Login&nbsp;/ Sign&nbsp;Up
-              </div>
+              <div style={btnStyle} onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+              <div style={btnStyle} onClick={() => openModal("login")}>🔐 Login / Sign Up</div>
             </>
           )}
         </div>
-      </div>
-
-      {/* ---------- SLIDING MENU ---------- */}
-      <div
-        ref={menuRef}
-        className={`sliding-menu ${menuOpen ? "open" : ""}`}
-        /* class styles are in Menu.css */
-      >
-        <button className="close-btn" onClick={() => setMenuOpen(false)}>&times;</button>
-        <a href="/home"            className="menu-item" onClick={() => setMenuOpen(false)}>Home</a>
-        <a href="/shop"            className="menu-item" onClick={() => setMenuOpen(false)}>Shop</a>
-        <a href="/magazines"       className="menu-item" onClick={() => setMenuOpen(false)}>Magazines</a>
       </div>
     </>
   );

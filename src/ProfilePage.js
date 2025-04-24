@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Menu from "./Menu";
 import "./ProfilePage.css";
 
 function ProfilePage({ isSignedIn, signOut }) {
   const navigate = useNavigate();
 
-  /* ----------------------------- state ----------------------------- */
   const [userInfo, setUserInfo] = useState({
     name: "",
     email: "",
@@ -16,7 +14,6 @@ function ProfilePage({ isSignedIn, signOut }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedInfo, setEditedInfo] = useState({ ...userInfo });
 
-  /* ----------------------- load / refresh data ---------------------- */
   useEffect(() => {
     if (!isSignedIn) {
       navigate("/");
@@ -29,7 +26,6 @@ function ProfilePage({ isSignedIn, signOut }) {
       return;
     }
 
-    /* cached copy first */
     const cached = localStorage.getItem("userData");
     if (cached) {
       const parsed = JSON.parse(cached);
@@ -37,7 +33,6 @@ function ProfilePage({ isSignedIn, signOut }) {
       setEditedInfo(parsed);
     }
 
-    /* fresh copy from server */
     fetch("http://localhost:5001/user/profile", {
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -52,8 +47,7 @@ function ProfilePage({ isSignedIn, signOut }) {
       .catch(console.error);
   }, [navigate, isSignedIn, signOut]);
 
-  /* ---------------------------- handlers ---------------------------- */
-  const handleEdit   = () => setIsEditing(true);
+  const handleEdit = () => setIsEditing(true);
   const handleCancel = () => {
     setIsEditing(false);
     setEditedInfo({ ...userInfo });
@@ -89,17 +83,13 @@ function ProfilePage({ isSignedIn, signOut }) {
 
   if (!isSignedIn) return null;
 
-  /* ----------------------------- render ----------------------------- */
   return (
     <div className="profile-page">
-      <Menu />
-
       <div className="profile-container">
         <h1>My Profile</h1>
 
         <div className="profile-content">
           {isEditing ? (
-            /* ---------- edit form ---------- */
             <div className="profile-form">
               <div className="form-group">
                 <label>Name:</label>
@@ -150,7 +140,6 @@ function ProfilePage({ isSignedIn, signOut }) {
               </div>
             </div>
           ) : (
-            /* ---------- view-only mode ---------- */
             <div className="profile-info">
               <div className="info-group">
                 <label>Name:</label>

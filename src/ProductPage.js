@@ -2,11 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
-import Menu from './Menu';
 import './ProductPage.css';
-import heartIcon from './assets/heart.png';
-import cartIcon from './assets/cart.png';
-import profileIcon from './assets/profile.svg';
 
 function ProductPage({ openModal, isSignedIn, signOut }) {
   const { productId } = useParams();
@@ -23,17 +19,15 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
       setWishlistCount(0);
       return;
     }
-
     const token = localStorage.getItem("token");
     try {
       const response = await fetch("http://localhost:5001/wishlist", {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
       if (data.success) {
         setWishlistCount(data.data.length);
+        if (window.updateWishlistCount) window.updateWishlistCount();
       }
     } catch (error) {
       console.error("Error fetching wishlist:", error);
@@ -88,14 +82,11 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
   const productImages = [
     getImage(product.image1),
     getImage(product.image2),
-    getImage(product.image3)
+    getImage(product.image3),
   ];
-
-  const handleCartClick = () => navigate('/cart');
 
   const toggleWishlist = async () => {
     if (!isSignedIn) return;
-
     const token = localStorage.getItem("token");
 
     if (!isWishlisted) {
@@ -112,7 +103,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
         if (data.success) {
           setWishlisted(true);
           fetchWishlistCount();
-          console.log("✅ Added to wishlist");
         } else {
           alert(`❌ ${data.message}`);
         }
@@ -129,7 +119,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
         if (data.success) {
           setWishlisted(false);
           fetchWishlistCount();
-          console.log("✅ Removed from wishlist");
         } else {
           alert(`❌ ${data.message}`);
         }
@@ -141,39 +130,19 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
 
   return (
     <div className="modern-product-page">
-      <Menu />
-
       <div className="auth-links">
         {isSignedIn ? (
           <>
-            <div className="auth-button" onClick={() => navigate("/wishlist")}>
-              ❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/cart")}>
-              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/profile")}>
-              👤 Profile
-            </div>
-
-            <div className="auth-button" onClick={() => navigate("/purchased-products")}>
-              📦 My Purchases
-            </div>
-
-            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>
-              🚪 Sign Out
-            </div>
+            <div className="auth-button" onClick={() => navigate("/wishlist")}>❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</div>
+            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+            <div className="auth-button" onClick={() => navigate("/profile")}>👤 Profile</div>
+            <div className="auth-button" onClick={() => navigate("/purchased-products")}>📦 My Purchases</div>
+            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>🚪 Sign Out</div>
           </>
         ) : (
           <>
-            <div className="auth-button" onClick={() => navigate("/cart")}>
-              🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
-            </div>
-            <div className="auth-button" onClick={() => openModal("login")}>
-              🔐 Login / Sign Up
-            </div>
+            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+            <div className="auth-button" onClick={() => openModal("login")}>🔐 Login / Sign Up</div>
           </>
         )}
       </div>
@@ -210,12 +179,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           ) : (
             <p
               className="wishlist-login-text"
-              style={{
-                color: "#d00",
-                fontWeight: "bold",
-                cursor: "pointer",
-                marginBottom: "10px",
-              }}
+              style={{ color: "#d00", fontWeight: "bold", cursor: "pointer", marginBottom: "10px" }}
               onClick={() => openModal("login")}
             >
               🔒 Login to add to wishlist
@@ -228,23 +192,15 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
             className="add-button"
             disabled={product.stock < 1}
             onClick={() => {
-              if (product.stock < 1) return;
-              
-              // Get current cart quantity for this product
               const existingItem = cart.find(item => item.id === product._id);
               const currentCartQuantity = existingItem?.quantity || 0;
-              
-              // Check if adding one more would exceed stock
               if (currentCartQuantity + 1 > product.stock) {
                 alert(`❌ Cannot add more items. Only ${product.stock} available in stock.`);
                 return;
               }
-
               if (existingItem) {
-                // If item exists, update its quantity
                 updateQuantity(product._id, currentCartQuantity + 1);
               } else {
-                // If item doesn't exist, add it new
                 addToCart({ ...product, id: product._id });
               }
               alert("✅ Product added to cart successfully!");
@@ -272,19 +228,12 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
                     <span className="reviewer-name">{r.userName}</span>
                     <div className="review-rating">
                       {Array.from({ length: 5 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={`star ${i < r.rating ? 'filled' : ''}`}
-                        >
-                          ★
-                        </span>
+                        <span key={i} className={`star ${i < r.rating ? 'filled' : ''}`}>★</span>
                       ))}
                     </div>
                   </div>
                   <p className="review-comment">{r.comment}</p>
-                  <span className="review-date">
-                    {new Date(r.date).toLocaleDateString()}
-                  </span>
+                  <span className="review-date">{new Date(r.date).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>

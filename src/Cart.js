@@ -46,7 +46,6 @@ function Cart() {
     if (!cart.length) return alert('Cart is empty!');
     const token = localStorage.getItem('token');
     if (!token) return alert('Please log in before checkout.');
-
     navigate('/credit-card-form');
   };
 
@@ -76,64 +75,66 @@ function Cart() {
   };
 
   return (
-    <div className="cart-page">
-      <h2>Your Shopping Cart</h2>
+    <div className="cart-container">
+      <div className="cart-page">
+        <h2>Your Shopping Cart</h2>
 
-      {cart.length === 0 ? (
-        <div className="empty-cart">
-          <p>Your cart is empty.</p>
-          <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
-        </div>
-      ) : (
-        <>
-          <div className="cart-items">
-            {cart.map((it) => (
-              <div key={it.id} className="cart-item">
-                <img
-                  src={getImage(productImages[it.id])}
-                  alt={it.name}
-                  className="cart-item-image"
-                />
-                <div className="cart-item-details">
-                  <h3>{it.name}</h3>
-                  <p className="cart-item-price">${it.price.toFixed(2)}</p>
+        {cart.length === 0 ? (
+          <div className="empty-cart">
+            <p>Your cart is empty.</p>
+            <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
+          </div>
+        ) : (
+          <>
+            <div className="cart-items">
+              {cart.map((it) => (
+                <div key={it.id} className="cart-item">
+                  <img
+                    src={getImage(productImages[it.id])}
+                    alt={it.name}
+                    className="cart-item-image"
+                  />
+                  <div className="cart-item-details">
+                    <h3>{it.name}</h3>
+                    <p className="cart-item-price">${it.price.toFixed(2)}</p>
+                  </div>
+                  <div className="cart-item-quantity">
+                    <button
+                      className="quantity-btn"
+                      onClick={() => handleQuantityChange(it, it.quantity - 1)}
+                      disabled={it.quantity <= 1}
+                    >−</button>
+                    <span>{it.quantity}</span>
+                    <button
+                      className="quantity-btn"
+                      onClick={() => handleQuantityChange(it, it.quantity + 1)}
+                    >+</button>
+                  </div>
+                  <div className="cart-item-total">
+                    ${(it.price * it.quantity).toFixed(2)}
+                  </div>
+                  <button className="remove-btn" onClick={() => removeFromCart(it.id)}>
+                    Remove
+                  </button>
                 </div>
-                <div className="cart-item-quantity">
-                  <button
-                    className="quantity-btn"
-                    onClick={() => handleQuantityChange(it, it.quantity - 1)}
-                    disabled={it.quantity <= 1}
-                  >−</button>
-                  <span>{it.quantity}</span>
-                  <button
-                    className="quantity-btn"
-                    onClick={() => handleQuantityChange(it, it.quantity + 1)}
-                  >+</button>
-                </div>
-                <div className="cart-item-total">
-                  ${(it.price * it.quantity).toFixed(2)}
-                </div>
-                <button className="remove-btn" onClick={() => removeFromCart(it.id)}>
-                  Remove
+              ))}
+            </div>
+
+            <div className="cart-summary">
+              <div className="cart-total">
+                <span>Total:</span>
+                <span>${getTotalPrice().toFixed(2)}</span>
+              </div>
+              <div className="cart-actions">
+                <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
+                <button className="checkout-btn" onClick={handleCheckout}>
+                  Proceed to Checkout
                 </button>
               </div>
-            ))}
-          </div>
-
-          <div className="cart-summary">
-            <div className="cart-total">
-              <span>Total:</span>
-              <span>${getTotalPrice().toFixed(2)}</span>
             </div>
-            <div className="cart-actions">
-              <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
-              <button className="checkout-btn" onClick={handleCheckout}>
-                Proceed to Checkout
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

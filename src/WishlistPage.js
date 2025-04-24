@@ -1,7 +1,6 @@
 // src/WishlistPage.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Menu from "./Menu";
 import "./WishlistPage.css";
 
 const images = require.context("./assets", false, /\.(png|jpe?g|webp|svg)$/);
@@ -28,6 +27,9 @@ function WishlistPage() {
       });
       const data = await res.json();
       if (data.success) setWishlist(data.data);
+
+      // ✅ Update top bar count
+      if (window.updateWishlistCount) window.updateWishlistCount();
     } catch (err) {
       console.error("Failed to fetch wishlist:", err);
     }
@@ -41,13 +43,15 @@ function WishlistPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // Remove item by matching productId._id or productId directly
       setWishlist((prev) =>
         prev.filter((item) => {
           const id = item.productId?._id || item.productId;
           return id !== productId;
         })
       );
+
+      // ✅ Update top bar count
+      if (window.updateWishlistCount) window.updateWishlistCount();
     } catch (err) {
       console.error("Failed to remove from wishlist:", err);
     }
@@ -59,7 +63,6 @@ function WishlistPage() {
 
   return (
     <div className="wishlist-page">
-      <Menu />
       <h2>Your Wishlist</h2>
 
       {wishlist.length === 0 ? (
@@ -68,10 +71,7 @@ function WishlistPage() {
         <div className="wishlist-items">
           {wishlist.map((item) => {
             const product = typeof item.productId === "object" ? item.productId : null;
-
-            if (!product || !product.name) {
-              return null;
-            }
+            if (!product || !product.name) return null;
 
             return (
               <div key={item._id} className="wishlist-card">
