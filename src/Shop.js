@@ -61,7 +61,8 @@ function Shop({ isSignedIn }) {
     const q = searchQuery.toLowerCase();
     const matchSearch =
       p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q);
+      p.category.toLowerCase().includes(q)
+      ||p.description.toLowerCase().includes(q);
     const matchCat =
       selectedCategory === "All" || p.category === selectedCategory;
     return matchSearch && matchCat;
