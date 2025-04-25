@@ -233,7 +233,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
                     </div>
                   </div>
                   <p className="review-comment">{r.comment}</p>
-                  <span className="review-date">{new Date(r.date).toLocaleDateString()}</span>
                 </div>
               ))}
             </div>
