@@ -52,8 +52,6 @@ function Shop({ isSignedIn }) {
         id: product._id,
         image: product.image1,
       });
-
-    alert("✅ Product added to cart!");
   };
 
   /* ----------------------- Search / category / sorting ----------------------- */

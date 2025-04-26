@@ -1,3 +1,4 @@
+// src/api/purchase.js frontend UNUSED
 export const recordPurchase = async (productId, quantity = 1, totalPrice) => {
   const token = localStorage.getItem("token");
 

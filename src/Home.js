@@ -1,11 +1,10 @@
 // Home.js
 import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Menu from "./Menu";
 import logo from "./assets/logo.png";
 import "./Home.css";
 
-function Home({ openModal }) {
+function Home() {
   const navigate       = useNavigate();
   const containerRef   = useRef(null);
 
@@ -69,11 +68,6 @@ function Home({ openModal }) {
   /* =============================== UI =============================== */
   return (
     <div className="home" ref={containerRef} onWheel={handleWheel}>
-      {/* Top bar (menu icon only – UserBar handles auth) */}
-      <div className="top-bar">
-        <Menu openModal={openModal} />
-      </div>
-
       {/* Full-screen logo */}
       <section className="fullscreen-logo-wrapper">
         <img src={logo} alt="Logo" className="fullscreen-logo" />

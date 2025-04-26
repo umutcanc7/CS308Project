@@ -1,125 +1,64 @@
 // src/CreditCardForm.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useCart } from "./CartContext";
+import { useNavigate }      from "react-router-dom";
+import { useCart }          from "./CartContext";
 import "./CreditCardForm.css";
 
-const API_BASE = (() => {
-  const envBase = process.env.REACT_APP_API_BASE_URL;
-  if (envBase && envBase.trim()) return envBase.replace(/\/$/, "");
-  if (window.location.hostname === "localhost") return "http://localhost:5001";
-  return "";
-})();
+const API_BASE =
+  process.env.REACT_APP_API_BASE_URL?.replace(/\/$/,"") ||
+  (window.location.hostname==="localhost" ? "http://localhost:5001" : "");
 
-function CreditCardForm() {
-  const navigate = useNavigate();
+export default function CreditCardForm() {
   const { cart, clearCart } = useCart();
+  const navigate = useNavigate();
 
   const [cardNumber, setCardNumber] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [cvv,        setCvv]        = useState("");
+  const [expiry,     setExpiry]     = useState("");
+  const [err,        setErr]        = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrorMessage("");
-
-    if (!cardNumber || !cvv || !expiryDate) {
-      setErrorMessage("Please fill out all fields.");
-      return;
-    }
-    if (cart.length === 0) {
-      setErrorMessage("Your cart is empty.");
-      return;
-    }
-
+  const submit = async e => {
+    e.preventDefault(); setErr("");
+    if (!cardNumber||!cvv||!expiry)      return setErr("Fill every field.");
+    if (!cart.length)                    return setErr("Your cart is empty.");
     const token = localStorage.getItem("token");
-    if (!token) {
-      setErrorMessage("You must be logged in to pay.");
-      return;
-    }
+    if (!token)                          return setErr("Please log in.");
 
-    try {
-      const items = cart.map(item => ({
-        productId: item.id || item._id,
-        quantity: item.quantity,
-        totalPrice: item.price * item.quantity,
-      }));
+    /* we still send items, but the backend now ignores them – harmless */
+    const items = cart.map(i=>({ productId:i.id||i._id, quantity:i.quantity, totalPrice:i.price*i.quantity }));
 
-      const res = await fetch(`${API_BASE}/purchase`, {
-        method: "POST",
-        mode: "cors",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ items }),
-      });
+    const res  = await fetch(`${API_BASE}/purchase`, {
+      method:"POST", headers:{ "Content-Type":"application/json", Authorization:`Bearer ${token}` },
+      body:JSON.stringify({ items })
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) return setErr(data.error||"Payment failed.");
 
-      const data = await res.json();
-      console.log("Purchase response:", data);
-
-      if (res.ok && data.success) {
-        clearCart();
-        navigate("/receipt");
-      } else {
-        setErrorMessage(data.error || "Failed to process purchase.");
-      }
-    } catch (err) {
-      console.error("Error during purchase:", err);
-      setErrorMessage("Network error. Please try again later.");
-    }
+    clearCart();
+    /* ➜ orderId only */
+    navigate(`/receipt/${data.orderId}`);
   };
 
   return (
     <div className="credit-card-form">
       <h2>Enter Credit Card Information</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={submit}>
+        {/* …inputs identical… */}
         <div className="form-group">
-          <label htmlFor="cardNumber">Card Number:</label>
-          <input
-            type="text"
-            id="cardNumber"
-            value={cardNumber}
-            onChange={(e) => setCardNumber(e.target.value)}
-            maxLength="16"
-            required
-          />
+          <label>Card Number:</label>
+          <input maxLength={16} value={cardNumber} onChange={e=>setCardNumber(e.target.value)} required />
         </div>
-
         <div className="form-group">
-          <label htmlFor="cvv">CVV:</label>
-          <input
-            type="text"
-            id="cvv"
-            value={cvv}
-            onChange={(e) => setCvv(e.target.value)}
-            maxLength="3"
-            required
-          />
+          <label>CVV:</label>
+          <input maxLength={3} value={cvv} onChange={e=>setCvv(e.target.value)} required />
         </div>
-
         <div className="form-group">
-          <label htmlFor="expiryDate">Expiration Date (MM/YY):</label>
-          <input
-            type="text"
-            id="expiryDate"
-            value={expiryDate}
-            onChange={(e) => setExpiryDate(e.target.value)}
-            maxLength="5"
-            placeholder="MM/YY"
-            required
-          />
+          <label>Expiration (MM/YY):</label>
+          <input maxLength={5} placeholder="MM/YY" value={expiry} onChange={e=>setExpiry(e.target.value)} required />
         </div>
-
-        {errorMessage && <p className="error-message">{errorMessage}</p>}
-
-        <button type="submit" className="pay-button">
-          Pay Now
-        </button>
+        {err && <p className="error-message">{err}</p>}
+        <button type="submit" className="pay-button">Pay Now</button>
       </form>
     </div>
   );
 }
-
-export default CreditCardForm;
