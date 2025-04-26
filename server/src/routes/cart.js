@@ -1,4 +1,3 @@
-// cart.js
 const express = require("express");
 const router = express.Router();
 const Cart = require("../models/Cart");
@@ -21,7 +20,7 @@ function authenticateToken(req, res, next) {
  * Merge local cart items into the user's cart.
  * Expects req.body.items to be an array of objects:
  * [
- *   { productId: someId, quantity: someQuantity },
+ *   { productId: someId, quantity: someQuantity, orderId: optionalOrderId },
  *   ...
  * ]
  */
@@ -35,22 +34,21 @@ router.post("/merge", authenticateToken, async (req, res) => {
 
   try {
     for (const item of items) {
-      // Make sure productId exists; if not, skip this item.
-      const { productId, quantity } = item;
+      const { productId, quantity, orderId } = item;
       if (!productId) continue;
 
-      // Check if this product is already in the user's cart.
       const existingItem = await Cart.findOne({ userId: req.user.id, productId });
+
       if (existingItem) {
-        // If already present, update the quantity.
         existingItem.quantity += quantity || 1;
+        if (orderId) existingItem.orderId = orderId;
         await existingItem.save();
       } else {
-        // If not, create a new cart entry.
-        const newCartItem = new Cart({ 
-          userId: req.user.id, 
+        const newCartItem = new Cart({
+          userId: req.user.id,
           productId,
-          quantity: quantity || 1 
+          quantity: quantity || 1,
+          orderId: orderId || undefined,
         });
         await newCartItem.save();
       }
@@ -61,18 +59,19 @@ router.post("/merge", authenticateToken, async (req, res) => {
   }
 });
 
-// Existing cart routes below...
-// For example, adding a single product to the cart:
+// Add single product to cart
 router.post("/add", authenticateToken, async (req, res) => {
-  const { productId, quantity } = req.body;
+  const { productId, quantity, orderId } = req.body;
   if (!productId) {
     return res.status(400).json({ success: false, error: "Product ID is required." });
   }
 
   try {
     const existingItem = await Cart.findOne({ userId: req.user.id, productId });
+
     if (existingItem) {
       existingItem.quantity += quantity || 1;
+      if (orderId) existingItem.orderId = orderId;
       await existingItem.save();
       return res.json({ success: true, message: "Cart updated." });
     }
@@ -81,6 +80,7 @@ router.post("/add", authenticateToken, async (req, res) => {
       userId: req.user.id,
       productId,
       quantity: quantity || 1,
+      orderId: orderId || undefined,
     });
 
     await newItem.save();
@@ -90,7 +90,7 @@ router.post("/add", authenticateToken, async (req, res) => {
   }
 });
 
-// Other routes (get cart, delete item, etc.)
+// Get user's cart
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const items = await Cart.find({ userId: req.user.id }).populate("productId");
@@ -100,6 +100,7 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
+// Delete an item from cart
 router.delete("/:productId", authenticateToken, async (req, res) => {
   try {
     await Cart.findOneAndDelete({ userId: req.user.id, productId: req.params.productId });

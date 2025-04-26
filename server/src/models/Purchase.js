@@ -6,7 +6,8 @@ const PurchaseSchema = new mongoose.Schema({
   quantity: { type: Number, required: true, default: 1 },
   totalPrice: { type: Number, required: true },
   purchaseDate: { type: Date, default: Date.now },
-  status: { type: String, default: "processing" }  // New field
+  status: { type: String, default: "processing" },
+  orderId: { type: String, required: true } // ✅ Yeni alan: sipariş kimliği
 });
 
 module.exports = mongoose.model("Purchase", PurchaseSchema);
