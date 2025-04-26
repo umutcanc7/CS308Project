@@ -1,4 +1,4 @@
-/* backend/routes/purchase.js ------------------------------------------------*/
+/* backend/routes/purchase.js ---------------------------------------------*/
 const express      = require("express");
 const router       = express.Router();
 const jwt          = require("jsonwebtoken");
@@ -17,7 +17,8 @@ function authenticateToken(req, res, next) {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, user)=>{
     if (err) return res.status(403).json({ success:false, error:"Invalid token" });
-    req.user = user; next();
+    req.user = user;
+    next();
   });
 }
 
@@ -28,7 +29,7 @@ const transporter = nodemailer.createTransport({
 });
 
 /* 📄 ------------------------------------------------------------ PDF maker */
-function buildReceiptPDF({ orderId, date, items, overallTotal }) {
+function buildReceiptPDF({ orderId, items, overallTotal }) {
   return new Promise((resolve, reject)=>{
     try {
       const doc   = new PDFDocument({ size:"A4", margin:40 });
@@ -39,14 +40,11 @@ function buildReceiptPDF({ orderId, date, items, overallTotal }) {
       /* Header */
       doc.fontSize(26).text("SwagLab", { align:"center" }).moveDown();
 
-      /* ① always use today's date so it never shows "Invalid Date" */
       const today = new Date().toLocaleDateString("tr-TR");
       doc.fontSize(12).text(today, { align:"right" }).moveDown(1.5);
 
-      /* Order number + ② one blank line after it */
       doc.text(`Order Number: ${orderId}`).moveDown();
 
-      /* Lines */
       items.forEach(it=>{
         doc.font("Helvetica-Bold").text(it.name);
         doc.font("Helvetica").text(it.code || "");
@@ -54,7 +52,6 @@ function buildReceiptPDF({ orderId, date, items, overallTotal }) {
         doc.moveDown();
       });
 
-      /* Total */
       doc.moveDown();
       doc.font("Helvetica-Bold").text("TOTAL", { align:"right" });
       doc.text(`${overallTotal.toFixed(2)} EUR`, { align:"right" });
@@ -74,11 +71,12 @@ router.post("/", authenticateToken, async (req,res)=>{
     if (!cartItems.length)
       return res.status(400).json({ success:false, error:"Cart is empty." });
 
+    /* (2) ➜  Generate ONE orderId for the whole checkout */
     const orderId       = `ORD-${Date.now()}-${Math.floor(Math.random()*10_000)}`;
     const receiptItems  = [];
     let   overallTotal  = 0;
 
-    /* (2) Process every cart line */
+    /* (3) Process every cart line */
     for (const item of cartItems) {
       const p = item.productId;
       if (!p || p.stock < item.quantity) {
@@ -87,11 +85,13 @@ router.post("/", authenticateToken, async (req,res)=>{
       }
 
       /* update stock */
-      p.stock -= item.quantity; await p.save();
+      p.stock -= item.quantity;
+      await p.save();
 
-      const lineTotal = item.quantity * p.price;
-      overallTotal   += lineTotal;
+      const lineTotal  = item.quantity * p.price;
+      overallTotal    += lineTotal;
 
+      /* ⬇️ Every line reuses the SAME orderId */
       await new Purchase({
         userId,
         productId : p._id,
@@ -110,19 +110,13 @@ router.post("/", authenticateToken, async (req,res)=>{
       });
     }
 
-    /* (3) Clear the cart */
+    /* (4) Clear the cart */
     await Cart.deleteMany({ userId });
 
-    /* (4) E-mail the receipt */
+    /* (5) E-mail the receipt (if user has an address) */
     const user = await User.findById(userId);
     if (user?.mail_adress) {
-      const pdfBuf = await buildReceiptPDF({
-        orderId,
-        date : new Date().toLocaleDateString("tr-TR"),
-        items: receiptItems,
-        overallTotal,
-      });
-
+      const pdfBuf = await buildReceiptPDF({ orderId, items:receiptItems, overallTotal });
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to  : user.mail_adress,
@@ -133,7 +127,7 @@ router.post("/", authenticateToken, async (req,res)=>{
       console.log("📧  Receipt e-mailed to", user.mail_adress);
     }
 
-    /* (5) Tell frontend the order ID (unchanged) */
+    /* (6) Respond to frontend */
     res.status(201).json({ success:true, message:"Order placed successfully.", orderId });
   } catch (e) {
     console.error("🔥  Error in POST /purchase:", e);
@@ -144,7 +138,11 @@ router.post("/", authenticateToken, async (req,res)=>{
 /* 📜 ----------------------------------------------------- GET /purchase/user */
 router.get("/user", authenticateToken, async (req,res)=>{
   try {
-    const purchases = await Purchase.find({ userId:req.user.id }).populate("productId");
+    const purchases = await Purchase
+      .find({ userId:req.user.id })
+      .populate("productId")
+      .sort({ purchaseDate: -1 });
+
     res.json({ success:true, userId:req.user.id, data:purchases });
   } catch (e) {
     console.error("Error fetching purchases:", e);
@@ -152,13 +150,11 @@ router.get("/user", authenticateToken, async (req,res)=>{
   }
 });
 
-/* 🆕 ------------------------------------------------ GET /purchase/receipt/:orderId
-      → returns { success, pdfBase64 } */
+/* 🆕 ------------------------------------------------ GET /purchase/receipt/:orderId */
 router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
   try {
     const { orderId } = req.params;
 
-    /* Pull every purchase line that belongs to this order & user */
     const purchases = await Purchase
       .find({ userId:req.user.id, orderId })
       .populate("productId");
@@ -166,7 +162,6 @@ router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
     if (!purchases.length)
       return res.status(404).json({ success:false, error:"Order not found." });
 
-    /* Re-create the data needed for the PDF */
     const items = purchases.map(p=>({
       name      : p.productId.name,
       code      : p.productId.barcode || p.productId._id,
@@ -176,11 +171,8 @@ router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
     }));
     const overallTotal = items.reduce((t,i)=>t+i.lineTotal, 0);
 
-    const pdfBase64 = (await buildReceiptPDF({
-      orderId,
-      date : new Date(purchases[0].createdAt).toLocaleDateString("tr-TR"),
-      items, overallTotal,
-    })).toString("base64");
+    const pdfBase64 = (await buildReceiptPDF({ orderId, items, overallTotal }))
+      .toString("base64");
 
     res.json({ success:true, pdfBase64 });
   } catch (e) {

@@ -1,3 +1,4 @@
+// api/reviews.js
 const API_BASE = "http://localhost:5001/reviews";
 
 // Get all reviews for a product

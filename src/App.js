@@ -16,6 +16,7 @@ import ProductReviewsPage   from "./ProductReviewsPage";
 import CreditCardForm       from "./CreditCardForm";
 import ProfilePage          from "./ProfilePage";
 import Receipt              from "./Receipt";
+import OrderDetailsPage     from "./OrderDetailsPage";
 
 import "./App.css";
 
@@ -70,6 +71,8 @@ export default function App() {
             path="/profile"
             element={<ProfilePage isSignedIn={isSignedIn} signOut={signOut} />}
           />
+          
+          <Route path="/order/:orderId" element={<OrderDetailsPage />} />
 
           {/* 🔑  NEW: parameterised receipt route */}
           <Route path="/receipt/:orderId" element={<Receipt />} />
