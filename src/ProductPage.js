@@ -138,24 +138,6 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
 
   return (
     <div className="modern-product-page">
-      {/* Auth and Navigation Buttons */}
-      <div className="auth-links">
-        {isSignedIn ? (
-          <>
-            <div className="auth-button" onClick={() => navigate("/wishlist")}>❤️ Wishlist {wishlistCount > 0 && `(${wishlistCount})`}</div>
-            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
-            <div className="auth-button" onClick={() => navigate("/profile")}>👤 Profile</div>
-            <div className="auth-button" onClick={() => navigate("/purchased-products")}>📦 My Purchases</div>
-            <div className="auth-button signout-button" onClick={() => { signOut(); clearCart(); }}>🚪 Sign Out</div>
-          </>
-        ) : (
-          <>
-            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart</div>
-            <div className="auth-button" onClick={() => openModal("login")}>🔐 Login / Sign Up</div>
-          </>
-        )}
-      </div>
-
       {/* Product Content */}
       <div className="product-layout">
         <div className="product-gallery">
