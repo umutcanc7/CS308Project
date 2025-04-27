@@ -46,7 +46,9 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
 
     fetch(`http://localhost:5001/reviews/${productId}`)
       .then(res => res.json())
-      .then(data => data.success && setReviews(data.data))
+      .then(data => {
+        if (data.success) setReviews(data.data);
+      })
       .catch(console.error);
 
     const token = localStorage.getItem("token");
@@ -128,8 +130,15 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
     }
   };
 
+  const approvedReviews = reviews.filter(r => r.status === "approved");
+
+  const averageRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : "No rating";
+
   return (
     <div className="modern-product-page">
+      {/* Auth and Navigation Buttons */}
       <div className="auth-links">
         {isSignedIn ? (
           <>
@@ -141,12 +150,13 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           </>
         ) : (
           <>
-            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart {getTotalItems() > 0 && `(${getTotalItems()})`}</div>
+            <div className="auth-button" onClick={() => navigate("/cart")}>🛒 Cart</div>
             <div className="auth-button" onClick={() => openModal("login")}>🔐 Login / Sign Up</div>
           </>
         )}
       </div>
 
+      {/* Product Content */}
       <div className="product-layout">
         <div className="product-gallery">
           <div className="main-image">
@@ -159,7 +169,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
                 className={`thumbnail ${mainImage === i ? 'active' : ''}`}
                 onClick={() => setMainImage(i)}
               >
-                <img src={img} alt={`${product.name} view ${i + 1}`} />
+                <img src={img} alt={`Product view ${i + 1}`} />
               </div>
             ))}
           </div>
@@ -179,8 +189,8 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
           ) : (
             <p
               className="wishlist-login-text"
-              style={{ color: "#d00", fontWeight: "bold", cursor: "pointer", marginBottom: "10px" }}
               onClick={() => openModal("login")}
+              style={{ color: "#d00", fontWeight: "bold", cursor: "pointer", marginBottom: "10px" }}
             >
               🔒 Login to add to wishlist
             </p>
@@ -195,7 +205,7 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
               const existingItem = cart.find(item => item.id === product._id);
               const currentCartQuantity = existingItem?.quantity || 0;
               if (currentCartQuantity + 1 > product.stock) {
-                alert(`❌ Cannot add more items. Only ${product.stock} available in stock.`);
+                alert(`❌ Cannot add more items. Only ${product.stock} available.`);
                 return;
               }
               if (existingItem) {
@@ -211,34 +221,33 @@ function ProductPage({ openModal, isSignedIn, signOut }) {
         </div>
       </div>
 
+      {/* Reviews Section */}
       <div className="reviews-section">
         <h2>Customer Reviews</h2>
-        {reviews.length ? (
-          <>
-            <div className="average-rating">
-              <span className="star-symbol">★</span>
-              <span className="rating-number">
-                {(reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)}
-              </span>
-            </div>
-            <div className="reviews-list">
-              {reviews.map(r => (
-                <div key={r._id} className="review-card">
-                  <div className="review-header">
-                    <span className="reviewer-name">{r.userName}</span>
-                    <div className="review-rating">
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <span key={i} className={`star ${i < r.rating ? 'filled' : ''}`}>★</span>
-                      ))}
-                    </div>
+        <div className="average-rating">
+          <span className="star-symbol">★</span>
+          <span className="rating-number">{averageRating}</span>
+        </div>
+
+        {reviews.length > 0 ? (
+          <div className="reviews-list">
+            {reviews.map(r => (
+              <div key={r._id} className="review-card">
+                <div className="review-header">
+                  <div className="review-rating">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span key={i} className={`star ${i < r.rating ? 'filled' : ''}`}>★</span>
+                    ))}
                   </div>
-                  <p className="review-comment">{r.comment}</p>
                 </div>
-              ))}
-            </div>
-          </>
+                {r.status === "approved" && (
+                  <p className="review-comment">{r.comment}</p>
+                )}
+              </div>
+            ))}
+          </div>
         ) : (
-          <p className="no-reviews">Be the first to review this product</p>
+          <p className="no-reviews">No reviews yet. Be the first!</p>
         )}
       </div>
     </div>
