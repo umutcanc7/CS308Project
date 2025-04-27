@@ -80,10 +80,11 @@ html,body{ margin:0; padding:0; height:100%; overflow:hidden; }
 .product-card h3{ margin-top:1rem; font-size:1.25rem; color:#000; }
 .product-card p { font-size:1rem; color:#555; }
 
-.slider-controls{ margin-top:1rem; display:flex; gap:1rem; }
+.slider-controls{ margin-top:5rem; display:flex; gap:1rem; }
 .slider-controls button{
   background:#fff; border:1px solid #ccc; width:36px; height:36px; border-radius:50%;
   cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center;
   transition:transform .2s ease;
 }
 .slider-controls button:hover{ transform:scale(1.1); }
+

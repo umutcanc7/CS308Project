@@ -5,22 +5,19 @@ import logo from "./assets/logo.png";
 import "./Home.css";
 
 function Home() {
-  const navigate       = useNavigate();
-  const containerRef   = useRef(null);
+  const navigate = useNavigate();
+  const containerRef = useRef(null);
 
-  /* ---------- category state ---------- */
-  const [categories, setCategories]             = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [categoryProducts, setCategoryProducts] = useState([]);
-  const [currentIndex, setCurrentIndex]         = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  /* ---------- smooth scroll ---------- */
   const handleWheel = (e) => {
     e.preventDefault();
     containerRef.current.scrollBy({ top: e.deltaY * 0.4, behavior: "smooth" });
   };
 
-  /* ---------- fetch category list ---------- */
   useEffect(() => {
     fetch("http://localhost:5001/products/categories")
       .then((res) => res.json())
@@ -33,7 +30,6 @@ function Home() {
       .catch(console.error);
   }, []);
 
-  /* ---------- fetch products in selected category ---------- */
   useEffect(() => {
     if (!selectedCategory) return;
     fetch("http://localhost:5001/products")
@@ -50,7 +46,6 @@ function Home() {
       .catch(console.error);
   }, [selectedCategory]);
 
-  /* ---------- helpers ---------- */
   const getImage = (imageName) => {
     try {
       return require(`./assets/${imageName}`);
@@ -58,14 +53,15 @@ function Home() {
       return require("./assets/logo.png");
     }
   };
+  
   const nextProduct = () =>
     setCurrentIndex((prev) => (prev + 1) % categoryProducts.length);
+  
   const prevProduct = () =>
     setCurrentIndex((prev) => (prev - 1 + categoryProducts.length) % categoryProducts.length);
 
   const currentProduct = categoryProducts[currentIndex];
 
-  /* =============================== UI =============================== */
   return (
     <div className="home" ref={containerRef} onWheel={handleWheel}>
       {/* Full-screen logo */}
@@ -105,6 +101,15 @@ function Home() {
               />
               <h3>{currentProduct.name}</h3>
               <p>${currentProduct.price.toFixed(2)}</p>
+
+              {/* 🆕 New Button: Go To Reviews */}
+              <button
+                className="go-to-shop" // ✅ reuse your nice black button style
+                style={{ marginTop: "1rem" }}
+                onClick={() => navigate(`/product/${currentProduct._id}`)}
+              >
+                Go To Reviews
+              </button>
             </div>
           ) : (
             <p>No products in this category</p>
