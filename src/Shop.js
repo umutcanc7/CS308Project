@@ -22,10 +22,22 @@ function Shop({ isSignedIn }) {
       .catch(console.error);
   }, []);
 
+  // useEffect(() => {
+  //   fetch("http://localhost:5001/products/categories")
+  //     .then((res) => res.json())
+  //     .then((data) => data.success && setCategories(data.data))
+  //     .catch(console.error);
+  // }, []);
+
   useEffect(() => {
-    fetch("http://localhost:5001/products/categories")
-      .then((res) => res.json())
-      .then((data) => data.success && setCategories(data.data))
+    fetch("http://localhost:5001/productmanager/categories")     // ← new source
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          const names = json.data.map(c => c.name);   // [{ _id, name }] → ["name"]
+          setCategories(names);
+        }
+      })
       .catch(console.error);
   }, []);
 

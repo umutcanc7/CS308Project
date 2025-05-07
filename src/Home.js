@@ -19,12 +19,13 @@ function Home() {
   };
 
   useEffect(() => {
-    fetch("http://localhost:5001/products/categories")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) {
-          setCategories(data.data);
-          setSelectedCategory(data.data[0] || "");
+    fetch("http://localhost:5001/productmanager/categories")          // ← new endpoint
+      .then(res => res.json())
+      .then(json => {
+        if (json.success) {
+          const names = json.data.map(c => c.name);        // [{_id,name}] ➜ ["shoes", …]
+          setCategories(names);
+          setSelectedCategory(names[0] || "");
         }
       })
       .catch(console.error);

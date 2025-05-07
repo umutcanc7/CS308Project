@@ -38,7 +38,9 @@ app.use('/cart', cartRoutes); // /cart altında kullanılsın
 const purchaseRoutes = require('./routes/purchase'); // Satın alma router'ını dahil et
 app.use('/purchase', purchaseRoutes);
 
-
+// server/src/index.js
+const pmRoutes = require("./routes/productmanager");
+app.use("/productmanager", pmRoutes);            // new mount
 
 // Routes for frontend pages
 app.get('/', (req, res) => {

@@ -1,3 +1,4 @@
+// frontend AuthModal.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "./CartContext"; // Import refreshCart from cart context
@@ -89,8 +90,18 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn,
       const data = await response.json();
       
       if (response.ok && data.success) {
+
+        if (data.role === "admin") {
+          localStorage.setItem("adminToken", data.token);   // keep separate key if you like
+          alert("Logged in as admin");
+          resetForm();
+          onClose();
+          setIsSignedIn(true);               // optional – lets UserBar show “signed in”
+          navigate("/product-manager-page");           // 🚀 redirect
+          return;                            // stop here, skip cart/profile merge
+        }  
+
         localStorage.setItem("token", data.token);
-        
         try {
           // Fetch user profile data
           const profileResponse = await fetch("http://localhost:5001/user/profile", {

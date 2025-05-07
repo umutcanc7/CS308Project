@@ -112,7 +112,7 @@ export default function OrderDetailsPage() {
       <section className="order-meta">
         <div><strong>Date:</strong> {dateStr}</div>
         <div><strong>Order&nbsp;ID:</strong> {orderId}</div>
-        <div><strong>Total:</strong> {grandTotal.toFixed(2)} TL</div>
+        <div><strong>Total:</strong> {grandTotal.toFixed(2)} EUR</div>
         {statusText && <div><strong>Status:</strong> {statusText}</div>}
       </section>
 
