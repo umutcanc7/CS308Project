@@ -22,6 +22,10 @@ export default function ProductManagerPage() {
     e.preventDefault();
     const name = newName.trim();
     if (!name) return;
+    if (cats.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+      setStatus({ msg: `Category "${name}" is already added.`, error: true });
+      return;
+    }
 
     const res  = await fetch("http://localhost:5001/productmanager/categories", {
       method:"POST",
@@ -53,31 +57,35 @@ export default function ProductManagerPage() {
 
   return (
     <div className="admin-page">
-      <h1>Product Manager</h1>
+      <div className="sticky-header">
+        <h1>Product Manager</h1>
 
-      <form onSubmit={addCategory} className="add-form">
-        <input
-          value={newName}
-          onChange={e=>setNewName(e.target.value)}
-          placeholder="New category name"
-        />
-        <button type="submit">Add</button>
-      </form>
+        <form onSubmit={addCategory} className="add-form">
+          <input
+            value={newName}
+            onChange={e=>setNewName(e.target.value)}
+            placeholder="New category name"
+          />
+          <button type="submit">Add</button>
+        </form>
 
-      {status.msg && (
-        <p className={status.error ? "status error":"status ok"}>{status.msg}</p>
-      )}
+        {status.msg && (
+          <p className={status.error ? "status error":"status ok"}>{status.msg}</p>
+        )}
+      </div>
 
       <h2>Existing categories</h2>
-      <ul className="cat-list">
-        {cats.map(c=>(
-          <li key={c._id}>
-            {c.name}
-            <button onClick={()=>delCategory(c.name)}>🗑</button>
-          </li>
-        ))}
-        {cats.length===0 && <li><em>none yet</em></li>}
-      </ul>
+      <div className="categories-list-container">
+        <ul className="cat-list">
+          {cats.map(c=>(
+            <li key={c._id}>
+              {c.name}
+              <button onClick={()=>delCategory(c.name)}>🗑</button>
+            </li>
+          ))}
+          {cats.length===0 && <li><em>none yet</em></li>}
+        </ul>
+      </div>
     </div>
   );
 }
