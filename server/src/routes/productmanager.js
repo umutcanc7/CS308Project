@@ -64,4 +64,20 @@ router.delete("/categories/:name", requireAdmin, async (req, res) => {
 // legacy alias so /categories still works for read-only clients
 router.get("/categories", /* existing handler above will match */);
 
+// Add this endpoint for stock adjustment
+router.put("/products/:id/stock", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { stock } = req.body;
+  if (typeof stock !== "number" || stock < 0) {
+    return res.status(400).json({ success: false, msg: "Invalid stock value" });
+  }
+  try {
+    const product = await Product.findByIdAndUpdate(id, { stock }, { new: true });
+    if (!product) return res.status(404).json({ success: false, msg: "Product not found" });
+    res.json({ success: true, data: product });
+  } catch (err) {
+    res.status(500).json({ success: false, msg: err.message });
+  }
+});
+
 module.exports = router;
