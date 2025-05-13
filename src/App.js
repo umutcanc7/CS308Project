@@ -18,6 +18,7 @@ import ProfilePage          from "./ProfilePage";
 import Receipt              from "./Receipt";
 import OrderDetailsPage     from "./OrderDetailsPage";
 import ProductManagerPage   from "./ProductManagerPage";      // ← NEW
+import ProductManagerPurcases from "./ProductManagerPurchases";
 
 import "./App.css";
 
@@ -82,6 +83,9 @@ export default function App() {
 
           {/* (optional) keep the old path alive so existing bookmarks don’t 404 */}
           <Route path="/receipt" element={<Navigate to="/home" replace />} />
+
+          <Route path="/product-manager-purchases" element ={<ProductManagerPurcases />} />
+          
         </Routes>
 
         {/* top bar & auth modal */}

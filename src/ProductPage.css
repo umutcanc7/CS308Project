@@ -9,6 +9,7 @@
   overflow-y: auto;
   scroll-behavior: smooth;
   box-sizing: border-box;
+  overflow:visible;            /* disable its inner scrollbar */
 }
 
 .product-layout {
