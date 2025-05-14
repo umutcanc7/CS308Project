@@ -141,6 +141,11 @@ export default function ProductManagerPage() {
           </div>
 
           <div className="header-subsection">
+            <h3 className="subheading">Return to Dashboard</h3>
+            <button onClick={() => navigate("/admin")} className="white-btn">Back to Admin</button>
+          </div>
+
+          <div className="header-subsection">
             <h3 className="subheading">Add New Category</h3>
             <form onSubmit={addCategory} className="add-form-centered">
               <input className="category-input"

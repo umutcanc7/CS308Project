@@ -37,6 +37,9 @@ app.use('/purchase', purchaseRoutes);
 const pmRoutes = require("./routes/productmanager");
 app.use("/productmanager", pmRoutes);
 
+const salesManagerRoutes = require("./routes/salesmanager");
+app.use("/salesmanager", salesManagerRoutes);
+
 const wishlistRoutes = require("./routes/wishlist");
 app.use("/wishlist", wishlistRoutes);
 
