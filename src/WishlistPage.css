@@ -1,19 +1,44 @@
-/* src/WishlistPage.css */
-
+/* Wishlist Container - Full viewport width and height */
 .wishlist-page {
-  padding: 80px 20px 40px;
-  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  overflow-x: hidden;
   background-color: #F0EAD6; /* Match product/shop background */
-  min-height: 100vh;
+  padding-right: 0;         /* Ensure scrollbar is flush right */
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 20px 40px;
 }
 
+/* Scrollbar Styling */
+.wishlist-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.wishlist-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.wishlist-page::-webkit-scrollbar-thumb {
+  background-color: #999;
+  border-radius: 6px;
+}
+
+.wishlist-page::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+}
+
+/* Wishlist Title */
 .wishlist-page h2 {
   font-size: 28px;
   margin-bottom: 20px;
   color: #333;
 }
 
+/* Wishlist Items Container */
 .wishlist-items {
   display: flex;
   flex-wrap: wrap;
@@ -23,6 +48,7 @@
   margin: 0 auto;
 }
 
+/* Wishlist Card */
 .wishlist-card {
   width: 220px;
   padding: 16px;
@@ -60,6 +86,7 @@
   color: #555;
 }
 
+/* Remove Button */
 .remove-btn {
   background: #e60023;
   color: #fff;

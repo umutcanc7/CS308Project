@@ -1,104 +1,121 @@
-/* ProfilePage.css */
-.profile-page {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem 4rem;
-  background-color: #F0EAD6;
-  min-height: 100vh;
-}
-
-.profile-container {
-  background: white;
-  border-radius: 12px;
-  padding: 4rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 2rem;
-  width: 100%;
-}
-
-.profile-container h1 {
-  color: #333;
-  margin-bottom: 3rem;
-  text-align: center;
-  font-size: 2rem;
-}
-
-.profile-content {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 3rem;
-}
-
-.info-group, .form-group {
-  margin-bottom: 2rem;
-}
-
-.info-group label, .form-group label {
-  display: block;
-  color: #666;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  font-size: 1.1rem;
-}
-
-.info-group p {
-  color: #333;
-  font-size: 1.1rem;
+/* Global settings to prevent overflow */
+html, body {
   margin: 0;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #eee;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-.profile-form input, .profile-form textarea {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  margin-top: 0.25rem;
-  background-color: #f8f9fa;
-}
-
-.profile-form textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.button-group {
+.profile-page {
+  width: 100vw;
+  height: 100vh;
   display: flex;
-  gap: 1.5rem;
-  margin-top: 3rem;
   justify-content: center;
+  align-items: center;
+  background-color: transparent;  /* Remove background */
+  overflow: hidden; 
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.edit-button, .save-button, .cancel-button {
-  padding: 0.75rem 2.5rem;
-  border-radius: 6px;
+/* Adjust the profile card width */
+.profile-card {
+  width: 500px;             /* Adjusted width */
+  padding: 32px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  text-align: left;
+  overflow: hidden;         /* Prevent card scrolling */
+  box-sizing: border-box;
+}
+
+.profile-card h1 {
+  margin-bottom: 24px;
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: bold;
+  text-align: center;
+}
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fbfd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.label {
+  font-weight: 600;
+  color: #555;
+}
+
+.value {
+  color: #222;
+  font-weight: 500;
+}
+
+.update-btn {
+  width: 100%;
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.update-btn:hover {
+  background-color: #0056b3;
+}
+
+.update-modal {
+  background-color: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+}
+
+.update-modal input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: none;
-  min-width: 150px;
+  background-color: #007bff;
+  color: #fff;
+  transition: background-color 0.3s;
 }
 
-.edit-button {
-  background: #007bff;
-  color: white;
-  display: block;
-  margin: 3rem auto 0;
+.modal-actions button:hover {
+  background-color: #0056b3;
 }
 
-.save-button {
-  background: #28a745;
-  color: white;
+.error {
+  color: #ff4d4f;
+  font-size: 1rem;
+  margin-bottom: 8px;
 }
-
-.cancel-button {
-  background: #dc3545;
-  color: white;
-}
-
-.edit-button:hover, .save-button:hover, .cancel-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-} 
