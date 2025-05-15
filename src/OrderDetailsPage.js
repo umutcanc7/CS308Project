@@ -11,6 +11,12 @@ const getImage = (imageName) => {
   }
 };
 
+const STATUS_OPTIONS = [
+  { value: "processing", label: "Processing" },
+  { value: "in-transit", label: "In-Transit" },
+  { value: "delivered", label: "Delivered" },
+];
+
 export default function OrderDetailsPage() {
   const { orderId } = useParams();
   const { state }   = useLocation();
@@ -24,6 +30,11 @@ export default function OrderDetailsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 5; // Keeping at 5 as confirmed
+
+  const [statusEdits, setStatusEdits] = useState({});
+  const [saving, setSaving] = useState({});
+  const [saveMsg, setSaveMsg] = useState({});
+  const isAdmin = Boolean(localStorage.getItem("adminToken"));
 
   /* fetch if state is missing */
   useEffect(() => {
@@ -136,17 +147,58 @@ export default function OrderDetailsPage() {
                 <p className="purchase-id">Purchase&nbsp;ID:&nbsp;{it._id}</p>
                 <p>Quantity:&nbsp;{it.quantity}</p>
                 <p>Total:&nbsp;{lineTotal.toFixed(2)}&nbsp;EUR</p>
-                <p className="status">{it.status}</p>
+                {/* Status display or dropdown for admin */}
+                {isAdmin ? (
+                  <div style={{ marginTop: 8 }}>
+                    <label>
+                      <strong>Change Delivery Status:&nbsp;</strong>
+                      <select
+                        value={statusEdits[it._id] ?? it.status}
+                        onChange={e => setStatusEdits(s => ({ ...s, [it._id]: e.target.value }))}
+                        disabled={saving[it._id]}
+                      >
+                        {STATUS_OPTIONS.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <button
+                      style={{ marginLeft: 8 }}
+                      disabled={saving[it._id] || (statusEdits[it._id] ?? it.status) === it.status}
+                      onClick={async () => {
+                        setSaving(s => ({ ...s, [it._id]: true }));
+                        setSaveMsg(m => ({ ...m, [it._id]: "" }));
+                        try {
+                          const adminToken = localStorage.getItem("adminToken");
+                          const res = await fetch(`http://localhost:5001/purchase/${it._id}/status`, {
+                            method: "PATCH",
+                            headers: {
+                              "Content-Type": "application/json",
+                              Authorization: `Bearer ${adminToken}`,
+                            },
+                            body: JSON.stringify({ status: statusEdits[it._id] ?? it.status }),
+                          });
+                          const json = await res.json();
+                          if (res.ok && json.success) {
+                            setItems(items => items.map(p => p._id === it._id ? { ...p, status: statusEdits[it._id] ?? it.status } : p));
+                            setSaveMsg(m => ({ ...m, [it._id]: "Updated!" }));
+                          } else {
+                            setSaveMsg(m => ({ ...m, [it._id]: json.error || "Failed" }));
+                          }
+                        } catch (e) {
+                          setSaveMsg(m => ({ ...m, [it._id]: "Error" }));
+                        }
+                        setSaving(s => ({ ...s, [it._id]: false }));
+                      }}
+                    >
+                      Save
+                    </button>
+                    {saveMsg[it._id] && <span style={{ marginLeft: 8, color: saveMsg[it._id] === "Updated!" ? "green" : "red" }}>{saveMsg[it._id]}</span>}
+                  </div>
+                ) : (
+                  <p className="status">{it.status}</p>
+                )}
               </div>
-
-              <button
-                className={`review-btn ${delivered ? "" : "disabled"}`}
-                onClick={() =>
-                  delivered && navigate(`/review/${it.productId?._id}`)
-                }
-              >
-                Write&nbsp;Review
-              </button>
             </div>
           );
         })}
