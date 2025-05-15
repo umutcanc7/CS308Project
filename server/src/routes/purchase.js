@@ -10,6 +10,17 @@ const Product  = require("../models/Product");
 const Cart     = require("../models/Cart");
 const User     = require("../models/User");
 
+// --- ADMIN MIDDLEWARE (copied from productmanager.js) ---
+function requireAdmin(req, res, next) {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) return res.status(401).json({ success:false, msg:"Admin token required" });
+  jwt.verify(token, process.env.ADMIN_JWT_SECRET, (err, payload) => {
+    if (err) return res.status(403).json({ success:false, msg:"Invalid admin token" });
+    req.admin = payload;
+    next();
+  });
+}
+
 /* 🔐 ---------------------------------------------------------------- Token */
 function authenticateToken(req, res, next) {
   const token = req.headers["authorization"]?.split(" ")[1];
@@ -66,7 +77,7 @@ router.post("/", authenticateToken, async (req,res)=>{
   try {
     const userId    = req.user.id;
 
-    /* (1) Gather the user’s current cart */
+    /* (1) Gather the user's current cart */
     const cartItems = await Cart.find({ userId }).populate("productId");
     if (!cartItems.length)
       return res.status(400).json({ success:false, error:"Cart is empty." });
@@ -178,6 +189,34 @@ router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
   } catch (e) {
     console.error("🔥  Error in GET /purchase/receipt:", e);
     res.status(500).json({ success:false, error:`Server error: ${e.message}` });
+  }
+});
+
+// --- ADMIN: GET ALL PURCHASES ---
+router.get("/all", requireAdmin, async (req, res) => {
+  try {
+    const purchases = await Purchase.find().populate("productId userId").sort({ purchaseDate: -1 });
+    res.json({ success: true, data: purchases });
+  } catch (e) {
+    console.error("Error fetching all purchases:", e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// --- ADMIN: UPDATE PURCHASE STATUS ---
+router.patch("/:id/status", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  if (!status || !["processing", "in-transit", "delivered"].includes(status)) {
+    return res.status(400).json({ success: false, error: "Invalid status value." });
+  }
+  try {
+    const updated = await Purchase.findByIdAndUpdate(id, { status }, { new: true });
+    if (!updated) return res.status(404).json({ success: false, error: "Purchase not found." });
+    res.json({ success: true, data: updated });
+  } catch (e) {
+    console.error("Error updating purchase status:", e);
+    res.status(500).json({ success: false, error: e.message });
   }
 });
 
