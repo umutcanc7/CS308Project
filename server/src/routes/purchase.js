@@ -220,4 +220,46 @@ router.patch("/:id/status", requireAdmin, async (req, res) => {
   }
 });
 
+// --- CANCEL PRODUCT IN ORDER ---
+router.delete("/:id/cancel", authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const purchase = await Purchase.findById(id);
+    if (!purchase) {
+      return res.status(404).json({ success: false, error: "Purchase not found." });
+    }
+
+    // Check if the product is in processing status
+    if (purchase.status !== "processing") {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Only products in 'processing' status can be canceled." 
+      });
+    }
+
+    // Check if the user owns this purchase
+    if (purchase.userId.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        success: false, 
+        error: "You are not authorized to cancel this purchase." 
+      });
+    }
+
+    // Restore product stock
+    const product = await Product.findById(purchase.productId);
+    if (product) {
+      product.stock += purchase.quantity;
+      await product.save();
+    }
+
+    // Delete the purchase
+    await Purchase.findByIdAndDelete(id);
+
+    res.json({ success: true, message: "Product successfully canceled." });
+  } catch (e) {
+    console.error("Error canceling purchase:", e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 module.exports = router;

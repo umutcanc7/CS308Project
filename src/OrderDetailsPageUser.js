@@ -23,6 +23,8 @@ export default function OrderDetailsPageUser({ token }) {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [canceling, setCanceling] = useState({});
+  const [cancelMsg, setCancelMsg] = useState({});
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -96,6 +98,35 @@ export default function OrderDetailsPageUser({ token }) {
     .map(([s, c]) => `${c} ${s.replace(/^\w/, (ch) => ch.toUpperCase())}`)
     .join(", ");
 
+  const handleCancel = async (itemId) => {
+    setCanceling(s => ({ ...s, [itemId]: true }));
+    setCancelMsg(m => ({ ...m, [itemId]: "" }));
+    try {
+      const res = await fetch(`http://localhost:5001/purchase/${itemId}/cancel`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        // Remove the canceled item from the list
+        setItems(items => items.filter(item => item._id !== itemId));
+        // Update the total
+        setTotal(total => {
+          const item = items.find(i => i._id === itemId);
+          return total - (item ? (Number(item.totalPrice) || (Number(item.productId?.price) || 0) * (item.quantity || 1)) : 0);
+        });
+        setCancelMsg(m => ({ ...m, [itemId]: "Canceled!" }));
+      } else {
+        setCancelMsg(m => ({ ...m, [itemId]: json.error || "Failed to cancel" }));
+      }
+    } catch (e) {
+      setCancelMsg(m => ({ ...m, [itemId]: "Error canceling" }));
+    }
+    setCanceling(s => ({ ...s, [itemId]: false }));
+  };
+
   if (role === null) return <div>Loading...</div>;
   if (role === "admin") return <OrderDetailsPageAdmin />;
   if (role === "user") return (
@@ -109,15 +140,16 @@ export default function OrderDetailsPageUser({ token }) {
       </section>
       <section className="order-items">
         {currentItems.map((it) => {
-          const delivered = (it.status || "").toLowerCase() === "delivered";
-          console.log('Order item status:', it.status, 'Delivered:', delivered);
-          const src       = it.productId?.image1
+          const src = it.productId?.image1
             ? getImage(it.productId.image1)
             : it.productId?.imageUrl ||
               "https://via.placeholder.com/100x100?text=%20";
           const lineTotal =
             Number(it.totalPrice) ||
             (Number(it.productId?.price) || 0) * (it.quantity || 1);
+          const delivered = it.status === "delivered";
+          const processing = it.status === "processing";
+
           return (
             <div key={it._id} className="order-item-card">
               <img src={src} alt={it.productId?.name} />
@@ -128,14 +160,30 @@ export default function OrderDetailsPageUser({ token }) {
                 <p>Total:&nbsp;{lineTotal.toFixed(2)}&nbsp;EUR</p>
                 <p className="status">{it.status}</p>
               </div>
-              <button
-                className={`review-btn ${delivered ? "" : "disabled"}`}
-                onClick={() => {
-                  if (delivered) navigate(`/review/${it.productId?._id}`);
-                }}
-              >
-                Write&nbsp;Review
-              </button>
+              <div className="item-actions">
+                {processing && (
+                  <button
+                    className="cancel-btn"
+                    onClick={() => handleCancel(it._id)}
+                    disabled={canceling[it._id]}
+                  >
+                    {canceling[it._id] ? "Canceling..." : "Cancel"}
+                  </button>
+                )}
+                <button
+                  className={`review-btn ${delivered ? "" : "disabled"}`}
+                  onClick={() => {
+                    if (delivered) navigate(`/review/${it.productId?._id}`);
+                  }}
+                >
+                  Write&nbsp;Review
+                </button>
+              </div>
+              {cancelMsg[it._id] && (
+                <span className={`cancel-msg ${cancelMsg[it._id] === "Canceled!" ? "success" : "error"}`}>
+                  {cancelMsg[it._id]}
+                </span>
+              )}
             </div>
           );
         })}

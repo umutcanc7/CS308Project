@@ -44,8 +44,9 @@
   /* Card */
   .order-item-card {
     display: grid;
-    grid-template-columns: 110px 1fr 130px;
-    align-items: center;
+    grid-template-columns: 110px 1fr;
+    grid-template-rows: auto auto;
+    align-items: start;
     gap: 1rem;
     
     background: #ffffff;
@@ -57,6 +58,7 @@
     width: 900px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
   }
   
   /* Thumbnail */
@@ -67,19 +69,27 @@
     border: 1px solid #e0e0e0;
     border-radius: 6px;
     flex-shrink: 0;
+    grid-row: 1;
   }
   
   /* Info */
+  .item-info {
+    grid-row: 1;
+  }
+  
   .item-info h4 { 
     margin: 0 0 3px; 
     font-size: 0.95rem;
   }
+  
   .item-info p { 
     margin: 1px 0; 
     font-size: 0.85rem; 
     line-height: 1.2;
   }
+  
   .item-info .status { font-weight: 600; }
+  
   .item-info .purchase-id { 
     color: #666;
     white-space: nowrap;
@@ -88,26 +98,76 @@
     max-width: 350px;
   }
   
-  /* ───────── REVIEW BUTTON ───────── */
+  /* Actions */
+  .item-actions {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+  }
+  
+  .cancel-btn {
+    background-color: #ff4444;
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    min-width: 120px;
+  }
+  
+  .cancel-btn:hover {
+    background-color: #ff0000;
+  }
+  
+  .cancel-btn:disabled {
+    background-color: #ffcccc;
+    cursor: not-allowed;
+  }
+  
   .review-btn {
-    justify-self: end;
     background: #0074d9;
     color: #fff;
     border: none;
     border-radius: 6px;
-    padding: 6px 12px;
+    padding: 8px 24px;
     font-size: 0.85rem;
     cursor: pointer;
     transition: background 0.15s ease;
+    min-width: 120px;
   }
+  
   .review-btn:hover { background: #0060b5; }
   
-  /* Disabled */
   .review-btn.disabled {
     background: #cccccc;
     cursor: default;
   }
+  
   .review-btn.disabled:hover { background: #cccccc; }
+  
+  .cancel-msg {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+  
+  .cancel-msg.success {
+    color: #00c853;
+  }
+  
+  .cancel-msg.error {
+    color: #ff4444;
+  }
   
   /* ───────── PAGINATION STYLES ───────── */
   .pagination {
