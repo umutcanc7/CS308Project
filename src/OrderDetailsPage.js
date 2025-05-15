@@ -2,6 +2,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import "./OrderDetailsPage.css";
+import { fetchReviews } from "./api/reviews";
+import OrderDetailsPageAdmin from "./OrderDetailsPageAdmin";
+import OrderDetailsPageUser from "./OrderDetailsPageUser";
 
 const getImage = (imageName) => {
   try {
@@ -34,7 +37,12 @@ export default function OrderDetailsPage() {
   const [statusEdits, setStatusEdits] = useState({});
   const [saving, setSaving] = useState({});
   const [saveMsg, setSaveMsg] = useState({});
-  const isAdmin = Boolean(localStorage.getItem("adminToken"));
+  const [role, setRole] = useState(null);
+  const [token, setToken] = useState(null);
+
+  const [productReviews, setProductReviews] = useState({}); // { productId: [reviews] }
+  const [reviewSaving, setReviewSaving] = useState({});
+  const [reviewMsg, setReviewMsg] = useState({});
 
   /* fetch if state is missing */
   useEffect(() => {
@@ -83,6 +91,24 @@ export default function OrderDetailsPage() {
     })();
   }, [items.length, orderId, navigate]);
 
+  // Fetch reviews for all products in the order (admin only)
+  useEffect(() => {
+    if (!role || !items.length) return;
+    const userId = items[0]?.userId?._id || items[0]?.userId || items[0]?.user?._id;
+    const fetchAll = async () => {
+      const reviewsByProduct = {};
+      for (const it of items) {
+        const res = await fetchReviews(it.productId?._id || it.productId);
+        if (res.success) {
+          reviewsByProduct[it.productId?._id || it.productId] = res.data;
+        }
+      }
+      setProductReviews(reviewsByProduct);
+    };
+    fetchAll();
+    // eslint-disable-next-line
+  }, [role, items]);
+
   // Get current page items
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -114,132 +140,28 @@ export default function OrderDetailsPage() {
     .map(([s, c]) => `${c} ${s.replace(/^\w/, (ch) => ch.toUpperCase())}`)
     .join(", ");
 
-  return (
-    <div className="order-details-page">
-      {/* Back button removed as requested */}
+  useEffect(() => {
+    const adminToken = localStorage.getItem("adminToken");
+    const userToken = localStorage.getItem("token");
+    let tokenToUse = adminToken || userToken;
+    setToken(tokenToUse);
+    if (!tokenToUse) {
+      setRole("none");
+      return;
+    }
+    fetch("http://localhost:5001/auth/is-admin", {
+      headers: { Authorization: `Bearer ${tokenToUse}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) setRole(data.isAdmin ? "admin" : "user");
+        else setRole("user");
+      })
+      .catch(() => setRole("user"));
+  }, []);
 
-      <h2>Order Details</h2>
-
-      <section className="order-meta">
-        <div><strong>Date:</strong> {dateStr}</div>
-        <div><strong>Order&nbsp;ID:</strong> {orderId}</div>
-        <div><strong>Total:</strong> {grandTotal.toFixed(2)} EUR</div>
-        {statusText && <div><strong>Status:</strong> {statusText}</div>}
-      </section>
-
-      <section className="order-items">
-        {currentItems.map((it) => {
-          const delivered = (it.status || "").toLowerCase() === "delivered";
-          const src       = it.productId?.image1
-            ? getImage(it.productId.image1)
-            : it.productId?.imageUrl ||
-              "https://via.placeholder.com/100x100?text=%20";
-          const lineTotal =
-            Number(it.totalPrice) ||
-            (Number(it.productId?.price) || 0) * (it.quantity || 1);
-
-          return (
-            <div key={it._id} className="order-item-card">
-              <img src={src} alt={it.productId?.name} />
-
-              <div className="item-info">
-                <h4>{it.productId?.name || "Unknown Product"}</h4>
-                <p className="purchase-id">Purchase&nbsp;ID:&nbsp;{it._id}</p>
-                <p>Quantity:&nbsp;{it.quantity}</p>
-                <p>Total:&nbsp;{lineTotal.toFixed(2)}&nbsp;EUR</p>
-                {/* Status display or dropdown for admin */}
-                {isAdmin ? (
-                  <div style={{ marginTop: 8 }}>
-                    <label>
-                      <strong>Change Delivery Status:&nbsp;</strong>
-                      <select
-                        value={statusEdits[it._id] ?? it.status}
-                        onChange={e => setStatusEdits(s => ({ ...s, [it._id]: e.target.value }))}
-                        disabled={saving[it._id]}
-                      >
-                        {STATUS_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
-                    </label>
-                    <button
-                      style={{ marginLeft: 8 }}
-                      disabled={saving[it._id] || (statusEdits[it._id] ?? it.status) === it.status}
-                      onClick={async () => {
-                        setSaving(s => ({ ...s, [it._id]: true }));
-                        setSaveMsg(m => ({ ...m, [it._id]: "" }));
-                        try {
-                          const adminToken = localStorage.getItem("adminToken");
-                          const res = await fetch(`http://localhost:5001/purchase/${it._id}/status`, {
-                            method: "PATCH",
-                            headers: {
-                              "Content-Type": "application/json",
-                              Authorization: `Bearer ${adminToken}`,
-                            },
-                            body: JSON.stringify({ status: statusEdits[it._id] ?? it.status }),
-                          });
-                          const json = await res.json();
-                          if (res.ok && json.success) {
-                            setItems(items => items.map(p => p._id === it._id ? { ...p, status: statusEdits[it._id] ?? it.status } : p));
-                            setSaveMsg(m => ({ ...m, [it._id]: "Updated!" }));
-                          } else {
-                            setSaveMsg(m => ({ ...m, [it._id]: json.error || "Failed" }));
-                          }
-                        } catch (e) {
-                          setSaveMsg(m => ({ ...m, [it._id]: "Error" }));
-                        }
-                        setSaving(s => ({ ...s, [it._id]: false }));
-                      }}
-                    >
-                      Save
-                    </button>
-                    {saveMsg[it._id] && <span style={{ marginLeft: 8, color: saveMsg[it._id] === "Updated!" ? "green" : "red" }}>{saveMsg[it._id]}</span>}
-                  </div>
-                ) : (
-                  <p className="status">{it.status}</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-
-        {items.length === 0 && (
-          <p className="empty">No items found for this order.</p>
-        )}
-        
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="pagination">
-            <button 
-              onClick={goToPreviousPage} 
-              disabled={currentPage === 1}
-              className="pagination-btn"
-            >
-              &lt;
-            </button>
-            
-            <div className="pagination-numbers">
-              {[...Array(totalPages).keys()].map(number => (
-                <button
-                  key={number + 1}
-                  onClick={() => paginate(number + 1)}
-                  className={`pagination-number ${currentPage === number + 1 ? 'active' : ''}`}
-                >
-                  {number + 1}
-                </button>
-              ))}
-            </div>
-            
-            <button 
-              onClick={goToNextPage} 
-              disabled={currentPage === totalPages}
-              className="pagination-btn"
-            >
-              &gt;
-            </button>
-          </div>
-        )}
-      </section>
-    </div>
-  );
+  if (role === null) return <div>Loading...</div>;
+  if (role === "admin") return <OrderDetailsPageAdmin token={token} />;
+  if (role === "user") return <OrderDetailsPageUser token={token} />;
+  return <div>You are not logged in.</div>;
 }

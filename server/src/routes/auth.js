@@ -282,5 +282,14 @@ router.put("/profile", authenticateToken, async (req, res) => {
   }
 });
 
+// GET /auth/is-admin
+router.get("/is-admin", authenticateToken, async (req, res) => {
+  try {
+    const isAdmin = await Admin.exists({ userId: req.user.id });
+    res.json({ success: true, isAdmin: !!isAdmin });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 module.exports = router;

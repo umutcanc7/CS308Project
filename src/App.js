@@ -32,11 +32,11 @@ export default function App() {
 
   /* ---------- Auth sync ---------- */
   useEffect(()=>{
-    if (localStorage.getItem("token")) setIsSignedIn(true);
+    if (localStorage.getItem("token") || localStorage.getItem("adminToken")) setIsSignedIn(true);
   },[]);
   useEffect(()=>{
     const onStorage = e=>{
-      if (e.key==="token" && !e.newValue) setIsSignedIn(false);
+      if ((e.key==="token" || e.key==="adminToken") && !e.newValue) setIsSignedIn(false);
     };
     window.addEventListener("storage", onStorage);
     return ()=>window.removeEventListener("storage", onStorage);
@@ -44,7 +44,12 @@ export default function App() {
 
   /* ---------- Modal helpers ---------- */
   const openModal = tab => { setModalTab(tab); setIsModalOpen(true); };
-  const signOut   = ()=>{ localStorage.removeItem("token"); setIsSignedIn(false); navigate("/home"); };
+  const signOut   = ()=>{
+    localStorage.removeItem("token");
+    localStorage.removeItem("adminToken");
+    setIsSignedIn(false);
+    navigate("/home");
+  };
 
   /* ---------- Routes ---------- */
   return (

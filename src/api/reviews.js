@@ -2,9 +2,10 @@
 const API_BASE = "http://localhost:5001/reviews";
 
 // Get all reviews for a product
-export const fetchReviews = async (productId) => {
+export const fetchReviews = async (productId, token) => {
   try {
-    const res = await fetch(`${API_BASE}/${productId}`);
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const res = await fetch(`${API_BASE}/${productId}`, { headers });
     return await res.json();
   } catch (err) {
     console.error("Fetch reviews failed:", err);
