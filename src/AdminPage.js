@@ -23,7 +23,7 @@ export default function AdminPage() {
         
         <div className="role-card" onClick={() => navigate("/sales-manager-page")}>
           <h2>Sales Manager</h2>
-          <p>Set prices for new products added by the product manager</p>
+          <p>Set prices for new products and manage refund requests from customers</p>
         </div>
       </div>
     </div>

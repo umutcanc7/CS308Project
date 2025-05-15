@@ -89,6 +89,13 @@ export default function SalesManagerPage() {
         <h1 className="page-title">Sales Manager</h1>
         <div className="header-sections-container">
           <div className="header-subsection">
+            <h3 className="subheading">Refund Requests</h3>
+            <button onClick={() => navigate("/refund-requests")} className="white-btn">
+              View Refund Requests
+            </button>
+          </div>
+
+          <div className="header-subsection">
             <h3 className="subheading">Return to Dashboard</h3>
             <button onClick={() => navigate("/admin")} className="white-btn">
               Back to Admin

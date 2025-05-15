@@ -245,3 +245,107 @@
       width: 80px;
     }
   }
+
+.refund-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+.refund-btn:hover {
+  background-color: #f57c00;
+}
+
+.refund-btn:disabled {
+  background-color: #ffe0b2;
+  cursor: not-allowed;
+}
+
+.refund-status {
+  margin-top: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.refund-status.requested {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.refund-status.rejected {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.refund-msg {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.refund-msg.success {
+  color: #00c853;
+}
+
+.refund-msg.error {
+  color: #ff4444;
+}
+
+.approve-btn {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+.approve-btn:hover {
+  background-color: #388e3c;
+}
+
+.approve-btn:disabled {
+  background-color: #c8e6c9;
+  cursor: not-allowed;
+}
+
+.reject-btn {
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  min-width: 120px;
+}
+
+.reject-btn:hover {
+  background-color: #d32f2f;
+}
+
+.reject-btn:disabled {
+  background-color: #ffcdd2;
+  cursor: not-allowed;
+}
+
+.refunded-label {
+  color: #28a745;
+  font-weight: bold;
+  margin-top: 0.5rem;
+}

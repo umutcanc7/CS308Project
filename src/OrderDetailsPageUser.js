@@ -25,6 +25,8 @@ export default function OrderDetailsPageUser({ token }) {
   const [totalPages, setTotalPages] = useState(1);
   const [canceling, setCanceling] = useState({});
   const [cancelMsg, setCancelMsg] = useState({});
+  const [refunding, setRefunding] = useState({});
+  const [refundMsg, setRefundMsg] = useState({});
   const itemsPerPage = 5;
 
   useEffect(() => {
@@ -127,6 +129,46 @@ export default function OrderDetailsPageUser({ token }) {
     setCanceling(s => ({ ...s, [itemId]: false }));
   };
 
+  const handleRefundRequest = async (itemId) => {
+    setRefunding(s => ({ ...s, [itemId]: true }));
+    setRefundMsg(m => ({ ...m, [itemId]: "" }));
+    try {
+      // Always get the latest user token from localStorage
+      const userToken = localStorage.getItem("token");
+      if (!userToken) {
+        setRefundMsg(m => ({ ...m, [itemId]: "User not logged in" }));
+        setRefunding(s => ({ ...s, [itemId]: false }));
+        return;
+      }
+      const res = await fetch(`http://localhost:5001/api/refund/request`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({
+          purchaseId: itemId,
+          reason: "I want a refund because..." // Optionally, you can let the user enter a reason
+        })
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        // Update the item's refund status
+        setItems(items => items.map(item => 
+          item._id === itemId 
+            ? { ...item, refundStatus: "requested", refundRequestDate: new Date() }
+            : item
+        ));
+        setRefundMsg(m => ({ ...m, [itemId]: "Refund requested!" }));
+      } else {
+        setRefundMsg(m => ({ ...m, [itemId]: json.error || "Failed to request refund" }));
+      }
+    } catch (e) {
+      setRefundMsg(m => ({ ...m, [itemId]: "Error requesting refund" }));
+    }
+    setRefunding(s => ({ ...s, [itemId]: false }));
+  };
+
   if (role === null) return <div>Loading...</div>;
   if (role === "admin") return <OrderDetailsPageAdmin />;
   if (role === "user") return (
@@ -149,6 +191,9 @@ export default function OrderDetailsPageUser({ token }) {
             (Number(it.productId?.price) || 0) * (it.quantity || 1);
           const delivered = it.status === "delivered";
           const processing = it.status === "processing";
+          const refundRequested = it.refundStatus === "requested";
+          const refundRejected = it.refundStatus === "rejected";
+          const refunded = it.status === "refunded";
 
           return (
             <div key={it._id} className="order-item-card">
@@ -159,9 +204,18 @@ export default function OrderDetailsPageUser({ token }) {
                 <p>Quantity:&nbsp;{it.quantity}</p>
                 <p>Total:&nbsp;{lineTotal.toFixed(2)}&nbsp;EUR</p>
                 <p className="status">{it.status}</p>
+                {refundRequested && (
+                  <p className="refund-status requested">Refund requested</p>
+                )}
+                {refundRejected && (
+                  <p className="refund-status rejected">Refund rejected</p>
+                )}
+                {refunded && (
+                  <p className="refunded-label">Refunded</p>
+                )}
               </div>
               <div className="item-actions">
-                {processing && (
+                {!refunded && processing && (
                   <button
                     className="cancel-btn"
                     onClick={() => handleCancel(it._id)}
@@ -170,18 +224,34 @@ export default function OrderDetailsPageUser({ token }) {
                     {canceling[it._id] ? "Canceling..." : "Cancel"}
                   </button>
                 )}
-                <button
-                  className={`review-btn ${delivered ? "" : "disabled"}`}
-                  onClick={() => {
-                    if (delivered) navigate(`/review/${it.productId?._id}`);
-                  }}
-                >
-                  Write&nbsp;Review
-                </button>
+                {!refunded && delivered && !refundRequested && !refundRejected && (
+                  <button
+                    className="refund-btn"
+                    onClick={() => handleRefundRequest(it._id)}
+                    disabled={refunding[it._id]}
+                  >
+                    {refunding[it._id] ? "Requesting..." : "Request Refund"}
+                  </button>
+                )}
+                {!refunded && (
+                  <button
+                    className={`review-btn ${delivered ? "" : "disabled"}`}
+                    onClick={() => {
+                      if (delivered) navigate(`/review/${it.productId?._id}`);
+                    }}
+                  >
+                    Write&nbsp;Review
+                  </button>
+                )}
               </div>
               {cancelMsg[it._id] && (
                 <span className={`cancel-msg ${cancelMsg[it._id] === "Canceled!" ? "success" : "error"}`}>
                   {cancelMsg[it._id]}
+                </span>
+              )}
+              {refundMsg[it._id] && (
+                <span className={`refund-msg ${refundMsg[it._id] === "Refund requested!" ? "success" : "error"}`}>
+                  {refundMsg[it._id]}
                 </span>
               )}
             </div>

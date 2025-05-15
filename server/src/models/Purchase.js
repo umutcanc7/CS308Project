@@ -9,7 +9,14 @@ const PurchaseSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
   purchaseDate: { type: Date, default: Date.now },
   status: { type: String, default: "processing" },
-  orderId: { type: String, required: true } // ✅ Yeni alan: sipariş kimliği
+  orderId: { type: String, required: true },
+  refundStatus: { 
+    type: String, 
+    enum: ["none", "requested", "approved", "rejected"],
+    default: "none"
+  },
+  refundRequestDate: { type: Date },
+  refundApprovalDate: { type: Date }
 });
 
 module.exports = mongoose.model("Purchase", PurchaseSchema);

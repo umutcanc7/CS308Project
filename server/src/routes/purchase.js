@@ -262,4 +262,141 @@ router.delete("/:id/cancel", authenticateToken, async (req, res) => {
   }
 });
 
+// --- REQUEST REFUND ---
+router.post("/:id/refund", authenticateToken, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const purchase = await Purchase.findById(id);
+    if (!purchase) {
+      return res.status(404).json({ success: false, error: "Purchase not found." });
+    }
+
+    // Check if the product is delivered
+    if (purchase.status !== "delivered") {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Only delivered products can be refunded." 
+      });
+    }
+
+    // Check if the user owns this purchase
+    if (purchase.userId.toString() !== req.user.id) {
+      return res.status(403).json({ 
+        success: false, 
+        error: "You are not authorized to request a refund for this purchase." 
+      });
+    }
+
+    // Check if 30 days have passed since delivery
+    const deliveryDate = purchase.purchaseDate;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    if (deliveryDate < thirtyDaysAgo) {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Refund can only be requested within 30 days of delivery." 
+      });
+    }
+
+    // Update purchase with refund request
+    purchase.refundStatus = "requested";
+    purchase.refundRequestDate = new Date();
+    await purchase.save();
+
+    res.json({ success: true, message: "Refund request submitted successfully." });
+  } catch (e) {
+    console.error("Error requesting refund:", e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// --- APPROVE REFUND (Sales Manager) ---
+router.post("/:id/approve-refund", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const purchase = await Purchase.findById(id);
+    if (!purchase) {
+      return res.status(404).json({ success: false, error: "Purchase not found." });
+    }
+
+    // Check if refund was requested
+    if (purchase.refundStatus !== "requested") {
+      return res.status(400).json({ 
+        success: false, 
+        error: "This purchase does not have a pending refund request." 
+      });
+    }
+
+    // Update purchase with refund approval
+    purchase.refundStatus = "approved";
+    purchase.refundApprovalDate = new Date();
+
+    // Restore product stock
+    const product = await Product.findById(purchase.productId);
+    if (product) {
+      product.stock += purchase.quantity;
+      await product.save();
+    }
+
+    // Delete the purchase
+    await Purchase.findByIdAndDelete(id);
+
+    // Notify user via email
+    const user = await User.findById(purchase.userId);
+    if (user?.mail_adress) {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.mail_adress,
+        subject: "Your Refund Request Has Been Approved",
+        text: `Your refund request for order ${purchase.orderId} has been approved. The refund amount of ${purchase.totalPrice} EUR will be processed shortly.`,
+      });
+    }
+
+    res.json({ success: true, message: "Refund approved and purchase deleted." });
+  } catch (e) {
+    console.error("Error approving refund:", e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+// --- REJECT REFUND (Sales Manager) ---
+router.post("/:id/reject-refund", requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const purchase = await Purchase.findById(id);
+    if (!purchase) {
+      return res.status(404).json({ success: false, error: "Purchase not found." });
+    }
+
+    // Check if refund was requested
+    if (purchase.refundStatus !== "requested") {
+      return res.status(400).json({ 
+        success: false, 
+        error: "This purchase does not have a pending refund request." 
+      });
+    }
+
+    // Update purchase with refund rejection
+    purchase.refundStatus = "rejected";
+    await purchase.save();
+
+    // Notify user via email
+    const user = await User.findById(purchase.userId);
+    if (user?.mail_adress) {
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: user.mail_adress,
+        subject: "Your Refund Request Has Been Rejected",
+        text: `Your refund request for order ${purchase.orderId} has been rejected. If you have any questions, please contact our customer service.`,
+      });
+    }
+
+    res.json({ success: true, message: "Refund request rejected." });
+  } catch (e) {
+    console.error("Error rejecting refund:", e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
+
 module.exports = router;

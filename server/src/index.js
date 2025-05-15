@@ -34,6 +34,9 @@ app.use('/cart', cartRoutes);
 const purchaseRoutes = require('./routes/purchase');
 app.use('/purchase', purchaseRoutes);
 
+const refundRoutes = require("./routes/refund");
+app.use("/api/refund", refundRoutes);
+
 const pmRoutes = require("./routes/productmanager");
 app.use("/productmanager", pmRoutes);
 
