@@ -192,16 +192,16 @@ router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
   }
 });
 
-// --- ADMIN: GET ALL PURCHASES ---
-router.get("/all", requireAdmin, async (req, res) => {
-  try {
-    const purchases = await Purchase.find().populate("productId userId").sort({ purchaseDate: -1 });
-    res.json({ success: true, data: purchases });
-  } catch (e) {
-    console.error("Error fetching all purchases:", e);
-    res.status(500).json({ success: false, error: e.message });
-  }
-});
+// // --- ADMIN: GET ALL PURCHASES ---
+// router.get("/all", requireAdmin, async (req, res) => {
+//   try {
+//     const purchases = await Purchase.find().populate("productId userId").sort({ purchaseDate: -1 });
+//     res.json({ success: true, data: purchases });
+//   } catch (e) {
+//     console.error("Error fetching all purchases:", e);
+//     res.status(500).json({ success: false, error: e.message });
+//   }
+// });
 
 // --- ADMIN: UPDATE PURCHASE STATUS ---
 router.patch("/:id/status", requireAdmin, async (req, res) => {
@@ -396,6 +396,37 @@ router.post("/:id/reject-refund", requireAdmin, async (req, res) => {
   } catch (e) {
     console.error("Error rejecting refund:", e);
     res.status(500).json({ success: false, error: e.message });
+  }
+});
+
+/* 🆕 ADMIN — GET RECEIPT FOR ANY ORDER */
+router.get("/admin/receipt/:orderId", requireAdmin, async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const purchases = await Purchase
+      .find({ orderId })
+      .populate("productId");
+
+    if (!purchases.length)
+      return res.status(404).json({ success:false, error:"Order not found." });
+
+    const items = purchases.map(p => ({
+      name      : p.productId.name,
+      code      : p.productId.barcode || p.productId._id,
+      quantity  : p.quantity,
+      unitPrice : p.productId.price,
+      lineTotal : p.totalPrice,
+    }));
+    const overallTotal = items.reduce((t, i) => t + i.lineTotal, 0);
+
+    const pdfBase64 = (await buildReceiptPDF({ orderId, items, overallTotal }))
+      .toString("base64");
+
+    res.json({ success:true, pdfBase64 });
+  } catch (e) {
+    console.error("🔥  Error in GET /purchase/admin/receipt:", e);
+    res.status(500).json({ success:false, error:`Server error: ${e.message}` });
   }
 });
 

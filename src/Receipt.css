@@ -1,4 +1,4 @@
-/* ───────── GLOBAL NAVBAR HEIGHT ─────────
+/* ───────── GLOBAL NAVBAR HEIGHT ───────── Receipt.css
    Keep this in sync with :root --navbar-height everywhere else. */
    :root { --navbar-height: 90px; }   /* ←  or 60px if that’s what you use */
 

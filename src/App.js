@@ -22,6 +22,9 @@ import ProductManagerPurcases from "./ProductManagerPurchases";
 import SalesManagerPage     from "./SalesManagerPage";
 import AdminPage            from "./AdminPage";
 import RefundRequestsPage   from "./RefundRequestsPage";
+import SalesManagerInvoices from "./SalesManagerInvoices";
+import AdminOrderReceipt from "./AdminOrderReceipt";
+
 
 import "./App.css";
 
@@ -97,6 +100,9 @@ export default function App() {
           <Route path="/receipt" element={<Navigate to="/home" replace />} />
 
           <Route path="/product-manager-purchases" element={<ProductManagerPurcases />} />
+
+          <Route path="/sales-manager-invoices" element={<SalesManagerInvoices/>}/>
+          <Route path="/admin-order/:orderId"    element={<AdminOrderReceipt/>}/>
           
         </Routes>
 
