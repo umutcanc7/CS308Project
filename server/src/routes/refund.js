@@ -19,7 +19,7 @@ function requireAdmin(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ success: false, msg: "Admin token required" });
   
-  jwt.verify(token, process.env.ADMIN_JWT_SECRET, (err, payload) => {
+  jwt.verify(token, process.env.SALES_ADMIN_JWT_SECRET, (err, payload) => {
     if (err) return res.status(403).json({ success: false, msg: "Invalid admin token" });
     req.admin = payload;
     next();

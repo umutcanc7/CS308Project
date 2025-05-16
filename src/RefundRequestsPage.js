@@ -16,7 +16,7 @@ const RefundRequestsPage = () => {
 
   const fetchRequests = async () => {
     try {
-      const token = localStorage.getItem("adminToken");
+      const token = localStorage.getItem("salesAdminToken");
       const response = await fetch("http://localhost:5001/api/refund/all", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,7 +39,7 @@ const RefundRequestsPage = () => {
   const handleRefundAction = async (requestId, action) => {
     try {
       setProcessing({ ...processing, [requestId]: true });
-      const token = localStorage.getItem("adminToken");
+      const token = localStorage.getItem("salesAdminToken");
       const response = await fetch(`http://localhost:5001/api/refund/${requestId}/${action}`, {
         method: "POST",
         headers: {
