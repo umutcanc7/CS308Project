@@ -9,7 +9,7 @@ export default function SalesManagerPage() {
   const [status,   setStatus]     = useState({ msg:"", error:false });
   const [priceEdits, setPriceEdits] = useState({});
   
-  const adminToken = localStorage.getItem("adminToken");
+  const adminToken = localStorage.getItem("salesAdminToken");
   const navigate   = useNavigate();
 
 /* ─────────── LOAD PENDING PRODUCTS ─────────── */

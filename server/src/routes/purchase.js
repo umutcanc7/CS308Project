@@ -10,14 +10,21 @@ const Product  = require("../models/Product");
 const Cart     = require("../models/Cart");
 const User     = require("../models/User");
 
-// --- ADMIN MIDDLEWARE (copied from productmanager.js) ---
+/* --- SALES-ADMIN or ADMIN GUARD --- */
 function requireAdmin(req, res, next) {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ success:false, msg:"Admin token required" });
-  jwt.verify(token, process.env.ADMIN_JWT_SECRET, (err, payload) => {
-    if (err) return res.status(403).json({ success:false, msg:"Invalid admin token" });
-    req.admin = payload;
-    next();
+
+  // try sales-admin secret first …
+  jwt.verify(token, process.env.SALES_ADMIN_JWT_SECRET, (err, payload) => {
+    if (!err) { req.salesAdmin = payload; return next(); }
+
+    // … fall back to full-admin secret
+    jwt.verify(token, process.env.ADMIN_JWT_SECRET, (adErr, adPayload) => {
+      if (adErr) return res.status(403).json({ success:false, msg:"Invalid admin token" });
+      req.admin = adPayload;
+      next();
+    });
   });
 }
 
@@ -192,16 +199,16 @@ router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
   }
 });
 
-// // --- ADMIN: GET ALL PURCHASES ---
-// router.get("/all", requireAdmin, async (req, res) => {
-//   try {
-//     const purchases = await Purchase.find().populate("productId userId").sort({ purchaseDate: -1 });
-//     res.json({ success: true, data: purchases });
-//   } catch (e) {
-//     console.error("Error fetching all purchases:", e);
-//     res.status(500).json({ success: false, error: e.message });
-//   }
-// });
+// --- ADMIN: GET ALL PURCHASES ---
+router.get("/all", requireAdmin, async (req, res) => {
+  try {
+    const purchases = await Purchase.find().populate("productId userId").sort({ purchaseDate: -1 });
+    res.json({ success: true, data: purchases });
+  } catch (e) {
+    console.error("Error fetching all purchases:", e);
+    res.status(500).json({ success: false, error: e.message });
+  }
+});
 
 // --- ADMIN: UPDATE PURCHASE STATUS ---
 router.patch("/:id/status", requireAdmin, async (req, res) => {

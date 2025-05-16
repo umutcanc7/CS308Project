@@ -29,7 +29,7 @@ export default function SalesManagerInvoices() {
 /* ───────────────────── FETCH & SHAPE DATA ───────────────────── */
   useEffect(() => {
     (async () => {
-      const adminToken = localStorage.getItem("adminToken");
+      const adminToken = localStorage.getItem("salesAdminToken");
       if (!adminToken) return;
 
       try {

@@ -5,6 +5,7 @@ const bcrypt    = require("bcryptjs");
 const jwt       = require("jsonwebtoken");
 const User      = require("../models/User");
 const Admin     = require("../models/Admin");
+const SalesAdmin  = require("../models/SalesAdmin");   // ← NEW
 
 const router = express.Router();
 
@@ -13,16 +14,18 @@ function authenticateToken(req, res, next) {
   const token = req.headers["authorization"]?.split(" ")[1];
   if (!token) return res.status(401).json({ success: false, message: "Token missing" });
 
-  // Try user secret first, then admin secret
-  jwt.verify(token, process.env.JWT_SECRET, (err, userPayload) => {
-    if (!err) {
-      req.user = userPayload;           // normal user
-      return next();
-    }
-    jwt.verify(token, process.env.ADMIN_JWT_SECRET, (admErr, admPayload) => {
-      if (admErr) return res.status(403).json({ success: false, message: "Invalid token" });
-      req.user = admPayload;            // admin
-      next();
+  // user → admin → salesAdmin
+  jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
+    if (!err) { req.user = payload; return next(); }
+
+    jwt.verify(token, process.env.ADMIN_JWT_SECRET, (adErr, adPayload) => {
+      if (!adErr) { req.user = adPayload; return next(); }
+
+      jwt.verify(token, process.env.SALES_ADMIN_JWT_SECRET, (saErr, saPayload) => {
+        if (saErr) return res.status(403).json({ success: false, message: "Invalid token" });
+        req.user = saPayload;                // sales-admin
+        next();
+      });
     });
   });
 }
@@ -68,12 +71,17 @@ router.post("/login", async (req, res) => {
 
     const tokenExpiry = rememberMe ? "7d" : "1h";
 
-    /* --- definitive admin check ----------------------------- */
-    // const isAdmin = !!(await Admin.findOne({ userId: user._id }).lean());
-    const isAdmin = await Admin.exists({ userId: user._id }).then(Boolean);
+    /* role & secret selection — admin → salesAdmin → user */
+    let role   = "user";
+    let secret = process.env.JWT_SECRET;
 
-    const secret = isAdmin ? process.env.ADMIN_JWT_SECRET : process.env.JWT_SECRET;
-    const role   = isAdmin ? "admin" : "user";
+    if (await Admin.exists({ userId: user._id })) {
+      role   = "admin";
+      secret = process.env.ADMIN_JWT_SECRET;
+    } else if (await SalesAdmin.exists({ userId: user._id })) {
+      role   = "salesAdmin";
+      secret = process.env.SALES_ADMIN_JWT_SECRET;
+    }
 
     const token = jwt.sign(
       { id: user._id, mail_adress: user.mail_adress, role },
@@ -87,95 +95,6 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
-
-// old register and login endpoints are kept just in case
-// // POST /auth/register
-// router.post("/register", async (req, res) => {
-//   const { name, password, phone_number, mail_adress } = req.body;
-
-//   // Basic validation
-//   if (!name || !password || !mail_adress) {
-//     return res.status(400).json({
-//       success: false,
-//       message: "Name, password, and mail_adress are required.",
-//     });
-//   }
-
-//   try {
-//     // Check if user already exists
-//     const existingUser = await User.findOne({ mail_adress });
-//     if (existingUser) {
-//       return res
-//         .status(400)
-//         .json({ success: false, message: "E-mail already registered!" });
-//     }
-
-//     // Hash password
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     // Create and save new user
-//     const newUser = new User({
-//       name,
-//       password: hashedPassword,
-//       phone_number,
-//       mail_adress,
-//     });
-//     await newUser.save();
-
-//     // Generate JWT token (expires in 1 hour)
-//     const token = jwt.sign(
-//       { id: newUser._id, mail_adress: newUser.mail_adress },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "1h" }
-//     );
-
-//     // Respond
-//     res.status(201).json({ success: true, message: "User registered successfully!", token });
-//   } catch (error) {
-//     console.error("Error during /register:", error);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// });
-
-// // POST /auth/login
-// router.post("/login", async (req, res) => {
-//   const { mail_adress, password, rememberMe } = req.body;
-
-//   if (!mail_adress || !password) {
-//     return res.status(400).json({ success: false, message: "E-mail and password are required." });
-//   }
-
-//   try {
-//     const user = await User.findOne({ mail_adress });
-//     if (!user) {
-//       return res.status(400).json({ success: false, message: "User not found" });
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) {
-//       return res.status(400).json({ success: false, message: "Invalid credentials" });
-//     }
-
-//     // Set token expiry based on 'Remember Me'
-//     const tokenExpiry = rememberMe ? "7d" : "1h";
-
-//     const token = jwt.sign(
-//       { id: user._id, mail_adress: user.mail_adress },
-//       process.env.JWT_SECRET,
-//       { expiresIn: tokenExpiry }
-//     );
-
-//     res.json({
-//       success: true,
-//       message: "Login successful",
-//       token,
-//       expiresIn: tokenExpiry,
-//     });
-//   } catch (error) {
-//     console.error("Error during /login:", error);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// });
 
 
 // POST /auth/forgot-password

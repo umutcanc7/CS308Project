@@ -23,8 +23,7 @@ import SalesManagerPage     from "./SalesManagerPage";
 import AdminPage            from "./AdminPage";
 import RefundRequestsPage   from "./RefundRequestsPage";
 import SalesManagerInvoices from "./SalesManagerInvoices";
-import AdminOrderReceipt from "./AdminOrderReceipt";
-
+import AdminOrderReceipt    from "./AdminOrderReceipt";
 
 import "./App.css";
 
@@ -35,25 +34,37 @@ export default function App() {
   const navigate = useNavigate();
 
   /* ---------- Auth sync ---------- */
-  useEffect(()=>{
-    if (localStorage.getItem("token") || localStorage.getItem("adminToken")) setIsSignedIn(true);
-  },[]);
-  useEffect(()=>{
-    const onStorage = e=>{
-      if ((e.key==="token" || e.key==="adminToken") && !e.newValue) setIsSignedIn(false);
+  useEffect(() => {
+    if (
+      localStorage.getItem("token") ||
+      localStorage.getItem("adminToken") ||
+      localStorage.getItem("salesAdminToken")      /* ← NEW */
+    ) {
+      setIsSignedIn(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onStorage = e => {
+      if (
+        ["token", "adminToken", "salesAdminToken"].includes(e.key) && !e.newValue
+      ) {
+        setIsSignedIn(false);
+      }
     };
     window.addEventListener("storage", onStorage);
-    return ()=>window.removeEventListener("storage", onStorage);
-  },[]);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
-  /* ---------- Modal helpers ---------- */
-  const openModal = tab => { setModalTab(tab); setIsModalOpen(true); };
-  const signOut   = ()=>{
-    localStorage.removeItem("token");
-    localStorage.removeItem("adminToken");
-    setIsSignedIn(false);
-    navigate("/home");
-  };
+    /* ---------- Modal helpers ---------- */
+    const openModal = tab => { setModalTab(tab); setIsModalOpen(true); };
+    const signOut   = () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("salesAdminToken");    /* ← NEW */
+      setIsSignedIn(false);
+      navigate("/home");
+    };
 
   /* ---------- Routes ---------- */
   return (

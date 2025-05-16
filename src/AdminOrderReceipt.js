@@ -18,7 +18,7 @@ export default function AdminOrderReceipt() {
   useEffect(() => {
     if (!orderId) { setErr("No order specified."); return; }
 
-    const adminToken = localStorage.getItem("adminToken");
+    const adminToken = localStorage.getItem("salesAdminToken");
     if (!adminToken) { setErr("Admin login required."); return; }
 
     (async () => {

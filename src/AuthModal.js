@@ -58,92 +58,99 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn,
     }
   };
 
+
   const handleLogin = async (e) => {
     e.preventDefault();
+  
     try {
-      // Basic validation
+      /* ────────── basic client-side validation ────────── */
       if (!email || !password) {
         alert("Please fill in all fields");
         return;
       }
-
-      // Email format validation
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         alert("Please enter a valid email address");
         return;
       }
-
+  
+      /* ────────── send login request ────────── */
       const response = await fetch("http://localhost:5001/auth/login", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
-        body: JSON.stringify({ 
-          mail_adress: email.trim(), 
-          password: password.trim(), 
-          rememberMe 
-        }),
+        body: JSON.stringify({
+          mail_adress: email.trim(),
+          password:    password.trim(),
+          rememberMe
+        })
       });
-
+  
       const data = await response.json();
-      
+  
+      /* ────────── handle success ────────── */
       if (response.ok && data.success) {
-
+        /* ---------- ADMIN ---------- */
         if (data.role === "admin") {
-          localStorage.setItem("adminToken", data.token);   // keep separate key if you like
+          localStorage.setItem("adminToken", data.token);
           alert("Logged in as admin");
           resetForm();
           onClose();
-          setIsSignedIn(true);               // optional – lets UserBar show “signed in”
-          navigate("/product-manager-page");           // 🚀 redirect
-          return;                            // stop here, skip cart/profile merge
-        }  
-
+          setIsSignedIn(true);
+          navigate("/product-manager-page");   // redirect to admin panel
+          return;                              // no cart/profile work for admins
+        }
+  
+        /* ---------- SALES-ADMIN ---------- */
+        if (data.role === "salesAdmin") {
+          localStorage.setItem("salesAdminToken", data.token);
+          alert("Logged in as sales manager");
+          resetForm();
+          onClose();
+          setIsSignedIn(true);
+          navigate("/sales-manager-page");     // redirect to sales manager panel
+          return;                              // skip cart/profile merge
+        }
+  
+        /* ---------- REGULAR USER ---------- */
         localStorage.setItem("token", data.token);
+  
         try {
-          // Fetch user profile data
-          const profileResponse = await fetch("http://localhost:5001/user/profile", {
+          /* fetch profile so we can cache it locally */
+          const profileResp = await fetch("http://localhost:5001/user/profile", {
             headers: {
               "Authorization": `Bearer ${data.token}`,
-              "Accept": "application/json"
+              "Accept":        "application/json"
             }
           });
-          
-          if (!profileResponse.ok) {
-            throw new Error("Failed to fetch profile data");
-          }
-          
-          const profileData = await profileResponse.json();
+          if (!profileResp.ok) throw new Error("Profile fetch failed");
+          const profileData = await profileResp.json();
           if (profileData.success) {
             localStorage.setItem("userData", JSON.stringify(profileData.data));
           }
-
-          alert("Login Successful");
-          setIsSignedIn(true);
-          await mergeCart(data.token);
-          await refreshCart();
-          resetForm();
-          onClose();
-          navigate("/shop");
-        } catch (profileError) {
-          console.error("Profile fetch error:", profileError);
-          // Still proceed with login even if profile fetch fails
-          setIsSignedIn(true);
-          await mergeCart(data.token);
-          await refreshCart();
-          resetForm();
-          onClose();
-          navigate("/shop");
+        } catch (profileErr) {
+          console.error("Profile fetch error:", profileErr);
+          /* non-fatal – continue the flow */
         }
-      } else {
-        // Handle specific error messages from the server
-        const errorMessage = data.message || "Invalid email or password";
-        alert(errorMessage);
+  
+        alert("Login successful");
+        setIsSignedIn(true);
+        await mergeCart(data.token);   // merge local cart with backend
+        await refreshCart();           // reload cart context
+        resetForm();
+        onClose();
+        navigate("/shop");
+        return;
       }
-    } catch (error) {
-      console.error("Login error:", error);
+  
+      /* ────────── handle failure ────────── */
+      const errorMessage = data.message || "Invalid email or password";
+      alert(errorMessage);
+  
+    } catch (err) {
+      console.error("Login error:", err);
       if (!navigator.onLine) {
         alert("Please check your internet connection");
       } else {
