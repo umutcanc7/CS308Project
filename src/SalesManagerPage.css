@@ -1,165 +1,154 @@
-.admin-page {
-  padding: 20px;
-}
-
-.manager-header-bar {
-  padding: 15px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.page-title {
-  margin-top: 0;
-  color: #333;
-  font-size: 28px;
-  margin-bottom: 15px;
-}
-
-.header-sections-container {
+.sales-page {
+  padding: 40px 20px;
+  background-color: #f5f5dc;
+  font-family: 'Segoe UI', sans-serif;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sales-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sales-title {
+  margin-bottom: 12px;
+  font-size: 30px;
+  color: #222;
+}
+
+.sales-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 20px;
 }
 
-.header-subsection {
-  flex: 1;
-  min-width: 250px;
-}
-
-.subheading {
-  margin-top: 0;
-  font-size: 18px;
-  color: #555;
-}
-
-.white-btn {
-  background-color: white;
-  border: 1px solid #ddd;
-  padding: 8px 15px;
-  border-radius: 4px;
+.sales-actions button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.white-btn:hover {
-  background-color: #f0f0f0;
-  border-color: #bbb;
+.sales-actions button:hover {
+  background-color: #0056b3;
 }
 
-.status {
-  margin-top: 15px;
-  padding: 10px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-.status.ok {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status.error {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-.section-box {
+.sales-section {
   background-color: white;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 24px;
+  width: 100%;
+  max-width: 750px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
-.section-box h2 {
+.sales-section h2 {
   margin-top: 0;
+  font-size: 22px;
   color: #333;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
   margin-bottom: 20px;
 }
 
-.empty-message {
-  text-align: center;
-  color: #666;
-  font-style: italic;
-  padding: 20px;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-  gap: 20px;
-}
-
-.product-card {
+.sales-list {
   display: flex;
-  background-color: #f9f9f9;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sales-card {
+  background-color: #fdfdfd;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.product-images {
-  width: 150px;
-  min-width: 150px;
-  overflow: hidden;
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-info {
-  padding: 15px;
-  flex: 1;
-}
-
-.product-info h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-.product-info p {
-  margin: 5px 0;
-  color: #666;
-}
-
-.price-form {
+  padding: 16px 20px;
   display: flex;
-  margin-top: 15px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+.sales-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: #444;
+}
+
+.sales-info h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: #222;
+}
+
+.sales-price-form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   gap: 10px;
 }
 
-.price-form input {
-  flex: 1;
+.sales-price-form input {
   padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  font-size: 14px;
+  width: 100px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fef9ec;
 }
 
-.price-button {
+.sales-price-form button {
   background-color: #007bff;
   color: white;
+  padding: 8px 14px;
+  font-size: 14px;
   border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s;
 }
 
-.price-button:hover {
-  background-color: #0069d9;
+.sales-price-form button:hover {
+  background-color: #0056b3;
 }
 
-.loading-container {
+.sales-empty {
+  font-style: italic;
+  color: #888;
   text-align: center;
-  padding: 50px;
+  padding: 25px;
+}
+
+.sales-status {
+  margin-top: 20px;
+  padding: 10px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.sales-status.ok {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.sales-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.sales-loading {
+  text-align: center;
   font-size: 18px;
+  padding: 60px;
   color: #666;
-} 
+}

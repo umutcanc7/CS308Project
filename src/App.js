@@ -20,7 +20,7 @@ import OrderDetailsPage     from "./OrderDetailsPage";
 import ProductManagerPage   from "./ProductManagerPage";
 import ProductManagerPurcases from "./ProductManagerPurchases";
 import SalesManagerPage     from "./SalesManagerPage";
-import AdminPage            from "./AdminPage";
+
 import RefundRequestsPage   from "./RefundRequestsPage";
 import SalesManagerInvoices from "./SalesManagerInvoices";
 import AdminOrderReceipt    from "./AdminOrderReceipt";
@@ -102,7 +102,7 @@ export default function App() {
           <Route path="/receipt/:orderId" element={<Receipt />} />
 
           {/* Admin routes */}
-          <Route path="/admin" element={<AdminPage />} />
+          
           <Route path="/product-manager-page" element={<ProductManagerPage />} />
           <Route path="/sales-manager-page" element={<SalesManagerPage />} />
           <Route path="/refund-requests" element={<RefundRequestsPage />} />

@@ -131,29 +131,24 @@ export default function ProductManagerPage() {
 
   return (
     <div className="admin-page">
-      <div className="manager-header-bar">
-        <h1 className="page-title">Product Manager</h1>
+      <div className="admin-header-bar">
+        <h1 className="admin-title">Product Manager</h1>
 
-        <div className="header-sections-container">
-          <div className="header-subsection">
-            <h3 className="subheading">Customers Purchases</h3>
-            <button onClick={() => navigate("/product-manager-purchases")} className="white-btn">Purchases</button>
+        <div className="admin-header-sections">
+          <div className="admin-subsection">
+            <h3 className="admin-subheading">Customers Purchases</h3>
+            <button onClick={() => navigate("/product-manager-purchases")} className="pm-purchases-btn white-btn">Purchases</button>
           </div>
 
-          <div className="header-subsection">
-            <h3 className="subheading">Return to Dashboard</h3>
-            <button onClick={() => navigate("/admin")} className="white-btn">Back to Admin</button>
-          </div>
-
-          <div className="header-subsection">
-            <h3 className="subheading">Add New Category</h3>
-            <form onSubmit={addCategory} className="add-form-centered">
-              <input className="category-input"
+          <div className="admin-subsection">
+            <h3 className="admin-subheading">Add New Category</h3>
+            <form onSubmit={addCategory} className="admin-add-form">
+              <input className="admin-category-input"
                 value={newCat}
                 onChange={e => setNewCat(e.target.value)}
                 placeholder="New category name"
               />
-              <button type="submit" className="category-add-btn">Add</button>
+              <button type="submit" className="admin-add-btn">Add</button>
             </form>
           </div>
         </div>
@@ -161,67 +156,64 @@ export default function ProductManagerPage() {
         {status.msg && <p className={status.error ? "status error" : "status ok"}>{status.msg}</p>}
       </div>
 
-      {/* Categories Section */}
-      <div className="section-box">
-        <h2>Existing Categories</h2>
-        <div className="cat-list-wrapper">
-          <ul className="cat-list">
+      <div className="admin-side-by-side">
+        <div className="admin-section-box admin-half">
+          <h2>Existing Categories</h2>
+          <ul className="admin-cat-list">
             {cats.map(c => (
-              <li className="cat-item" key={c._id}>
-                <div className="cat-name-box">{c.name}</div>
-                <button className="delete-btn-box" onClick={() => delCategory(c.name)}>🗑</button>
+              <li className="admin-cat-item" key={c._id}>
+                <div>{c.name}</div>
+                <button className="admin-delete-btn" onClick={() => delCategory(c.name)}>🗑</button>
               </li>
             ))}
           </ul>
         </div>
+
+        <div className="admin-section-box admin-half">
+          <h2>Add New Product</h2>
+          <form onSubmit={addProduct} className="admin-add-product-form">
+            <select value={newProd.category} onChange={e => setNewProd({ ...newProd, category: e.target.value })}>
+              <option value="">Select category</option>
+              {cats.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
+            </select>
+            <input placeholder="Product ID" type="number"
+              value={newProd.product_id} onChange={e => setNewProd({ ...newProd, product_id: e.target.value })}
+            />
+            <input placeholder="Name"
+              value={newProd.name} onChange={e => setNewProd({ ...newProd, name: e.target.value })}
+            />
+            <input placeholder="Color (optional)"
+              value={newProd.color} onChange={e => setNewProd({ ...newProd, color: e.target.value })}
+            />
+            <textarea placeholder="Description (optional)"
+              value={newProd.description} onChange={e => setNewProd({ ...newProd, description: e.target.value })}
+            />
+            <input placeholder="Initial stock" type="number"
+              value={newProd.stock} onChange={e => setNewProd({ ...newProd, stock: e.target.value })}
+            />
+            <input placeholder="Image 1"
+              value={newProd.image1} onChange={e => setNewProd({ ...newProd, image1: e.target.value })}
+            />
+            <input placeholder="Image 2"
+              value={newProd.image2} onChange={e => setNewProd({ ...newProd, image2: e.target.value })}
+            />
+            <input placeholder="Image 3"
+              value={newProd.image3} onChange={e => setNewProd({ ...newProd, image3: e.target.value })}
+            />
+            <button className="white-btn" type="submit">Add Product (price = –1)</button>
+          </form>
+        </div>
       </div>
 
-      {/* Add Product Section */}
-      <div className="section-box">
-        <h2>Add New Product</h2>
-        <form onSubmit={addProduct} className="add-product-form">
-          <select value={newProd.category} onChange={e => setNewProd({ ...newProd, category: e.target.value })}>
-            <option value="">Select category</option>
-            {cats.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
-          </select>
-          <input placeholder="Product ID" type="number"
-            value={newProd.product_id} onChange={e => setNewProd({ ...newProd, product_id: e.target.value })}
-          />
-          <input placeholder="Name"
-            value={newProd.name} onChange={e => setNewProd({ ...newProd, name: e.target.value })}
-          />
-          <input placeholder="Color (optional)"
-            value={newProd.color} onChange={e => setNewProd({ ...newProd, color: e.target.value })}
-          />
-          <textarea placeholder="Description (optional)"
-            value={newProd.description} onChange={e => setNewProd({ ...newProd, description: e.target.value })}
-          />
-          <input placeholder="Initial stock" type="number"
-            value={newProd.stock} onChange={e => setNewProd({ ...newProd, stock: e.target.value })}
-          />
-          <input placeholder="Image 1"
-            value={newProd.image1} onChange={e => setNewProd({ ...newProd, image1: e.target.value })}
-          />
-          <input placeholder="Image 2"
-            value={newProd.image2} onChange={e => setNewProd({ ...newProd, image2: e.target.value })}
-          />
-          <input placeholder="Image 3"
-            value={newProd.image3} onChange={e => setNewProd({ ...newProd, image3: e.target.value })}
-          />
-          <button className="white-btn" type="submit">Add Product (price = –1)</button>
-        </form>
-      </div>
-
-      {/* Stock Management Section */}
-      <div className="section-box">
+      <div className="admin-section-box">
         <h2>Product Stock Management</h2>
-        <ul className="product-stock-list">
+        <ul className="admin-stock-list">
           {products.map(p => (
-            <li className="stock-item" key={p._id}>
-              <div className="stock-left">
+            <li className="admin-stock-item" key={p._id}>
+              <div className="admin-stock-left">
                 <strong>{p.name}</strong> — ID: {p.product_id} (Stock: {p.stock})
               </div>
-              <div className="stock-right">
+              <div className="admin-stock-right">
                 <input
                   type="number"
                   min="0"
@@ -229,7 +221,7 @@ export default function ProductManagerPage() {
                   onChange={e => handleStockChange(p._id, e.target.value)}
                 />
                 <button onClick={() => updateStock(p._id)}>Update</button>
-                <button className="delete-btn-box" onClick={() => removeProduct(p._id)}>🗑</button>
+                <button className="admin-delete-btn" onClick={() => removeProduct(p._id)}>🗑</button>
               </div>
             </li>
           ))}

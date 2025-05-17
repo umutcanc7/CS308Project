@@ -1,4 +1,3 @@
-/* === Global Reset === */
 body, html, #root {
   margin: 0;
   padding: 0;
@@ -7,18 +6,20 @@ body, html, #root {
   font-family: sans-serif;
   overflow-x: hidden;
 }
-
-/* === Main Page Container === */
 .admin-page {
+  font-family: sans-serif;
+  background-color: #F0EAD6;
   min-height: 100vh;
   padding: 2rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* === Header Section === */
-.manager-header-bar {
+.admin-header-bar {
   width: 100%;
   background-color: #f6f3e9;
   padding: 2.5rem 1rem;
@@ -30,40 +31,40 @@ body, html, #root {
   gap: 2rem;
 }
 
-.page-title {
+.admin-title {
   font-size: 32px;
   font-weight: bold;
   margin: 0;
 }
 
-.header-sections-container {
+.admin-header-sections {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 3rem;
 }
 
-.header-subsection {
+.admin-subsection {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.5rem;
 }
 
-.subheading {
+.admin-subheading {
   font-size: 16px;
   font-weight: 600;
   margin: 0;
 }
 
 /* === Category Add Form === */
-.add-form-centered {
+.admin-add-form {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.category-input {
+.admin-category-input {
   width: 280px;
   padding: 8px;
   font-size: 15px;
@@ -72,7 +73,7 @@ body, html, #root {
   background-color: #f3ecd4;
 }
 
-.category-add-btn {
+.admin-add-btn {
   padding: 8px 16px;
   background-color: #111;
   color: white;
@@ -82,45 +83,23 @@ body, html, #root {
   cursor: pointer;
 }
 
-.category-add-btn:hover {
+.admin-add-btn:hover {
   background-color: #333;
 }
 
-/* === Purchases Button === */
-.pm-purchases-btn.white-btn {
-  background-color: white;
-  color: black;
-  border: 1px solid #ccc;
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: background-color 0.2s ease;
-  width: fit-content;
-  align-self: center;
-}
-
-.pm-purchases-btn.white-btn:hover {
-  background-color: #f0f0f0;
-}
-
 /* === Section Wrapper === */
-.section-box {
+.admin-section-box {
   background-color: #f6f3e9;
   padding: 2rem;
   border-radius: 12px;
-  max-width: 700px;
-  margin: 0 auto;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-/* === Categories === */
-.cat-list {
+/* === Category List === */
+.admin-cat-list {
   list-style: none;
   padding-left: 0;
   display: flex;
@@ -129,7 +108,7 @@ body, html, #root {
   margin: 0;
 }
 
-.cat-item {
+.admin-cat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -140,7 +119,7 @@ body, html, #root {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
-.delete-btn-box {
+.admin-delete-btn {
   width: 40px;
   height: 36px;
   background-color: #fff;
@@ -155,13 +134,13 @@ body, html, #root {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.delete-btn-box:hover {
+.admin-delete-btn:hover {
   background-color: #ff2800;
   color: #fff;
 }
 
 /* === Add Product Form === */
-.add-product-form {
+.admin-add-product-form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -175,10 +154,10 @@ body, html, #root {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.add-product-form input,
-.add-product-form textarea,
-.add-product-form select,
-.add-product-form button {
+.admin-add-product-form input,
+.admin-add-product-form textarea,
+.admin-add-product-form select,
+.admin-add-product-form button {
   width: 100%;
   padding: 10px;
   font-size: 15px;
@@ -188,19 +167,19 @@ body, html, #root {
   background-color: #f3ecd4;
 }
 
-.add-product-form button {
+.admin-add-product-form button {
   background-color: white;
   font-weight: bold;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-.add-product-form button:hover {
+.admin-add-product-form button:hover {
   background-color: #f0f0f0;
 }
 
 /* === Product Stock List === */
-.product-stock-list {
+.admin-stock-list {
   list-style: none;
   padding: 0;
   margin: 0 auto;
@@ -210,7 +189,7 @@ body, html, #root {
   gap: 1rem;
 }
 
-.stock-item {
+.admin-stock-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -221,22 +200,22 @@ body, html, #root {
   transition: background-color 0.2s ease;
 }
 
-.stock-item:hover {
+.admin-stock-item:hover {
   background-color: #f9f3dd;
 }
 
-.stock-left {
+.admin-stock-left {
   font-size: 15px;
   font-weight: 500;
 }
 
-.stock-right {
+.admin-stock-right {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-.stock-right input[type="number"] {
+.admin-stock-right input[type="number"] {
   width: 70px;
   padding: 6px;
   border: 1px solid #ccc;
@@ -246,7 +225,7 @@ body, html, #root {
   text-align: center;
 }
 
-.stock-right button:not(.delete-btn-box) {
+.admin-stock-right button:not(.admin-delete-btn) {
   padding: 6px 12px;
   background-color: #111;
   color: white;
@@ -257,6 +236,22 @@ body, html, #root {
   transition: background-color 0.2s ease;
 }
 
-.stock-right button:not(.delete-btn-box):hover {
+.admin-stock-right button:not(.admin-delete-btn):hover {
   background-color: #333;
+}
+
+/* === Side-by-side Layout === */
+.admin-side-by-side {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.admin-half {
+  flex: 1 1 500px;
+  min-width: 350px;
 }
