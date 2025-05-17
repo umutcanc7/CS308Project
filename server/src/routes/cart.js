@@ -1,9 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const Cart = require("../models/Cart");
+const User = require("../models/User");
 const jwt = require("jsonwebtoken");
 
-// Token doğrulama middleware
+// Token verification middleware
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -16,20 +17,36 @@ function authenticateToken(req, res, next) {
   });
 }
 
-/**
- * Merge local cart items into the user's cart.
- * Expects req.body.items to be an array of objects:
- * [
- *   { productId: someId, quantity: someQuantity, orderId: optionalOrderId },
- *   ...
- * ]
- */
+/* ───────── NEW: Check Address Before Checkout ───────── */
+router.get("/user/address", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("address");
+
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const address = user.address?.trim();
+    if (!address) {
+      return res.status(200).json({
+      success: true,
+      address: null,
+      message: "Address is missing. Please update your address in the profile page.",
+      });
+    }  
+
+    res.json({ success: true, address });
+  } catch (error) {
+    console.error("Error checking address:", error);
+    res.status(500).json({ success: false, error: "Server error while checking address." });
+  }
+});
+
+/* ───────── Merge Cart ───────── */
 router.post("/merge", authenticateToken, async (req, res) => {
   const { items } = req.body;
   if (!items || !Array.isArray(items)) {
-    return res
-      .status(400)
-      .json({ success: false, error: "Cart items are required and must be an array." });
+    return res.status(400).json({ success: false, error: "Cart items must be an array." });
   }
 
   try {
@@ -44,13 +61,12 @@ router.post("/merge", authenticateToken, async (req, res) => {
         if (orderId) existingItem.orderId = orderId;
         await existingItem.save();
       } else {
-        const newCartItem = new Cart({
+        await new Cart({
           userId: req.user.id,
           productId,
           quantity: quantity || 1,
           orderId: orderId || undefined,
-        });
-        await newCartItem.save();
+        }).save();
       }
     }
     res.json({ success: true, message: "Cart successfully merged." });
@@ -59,7 +75,7 @@ router.post("/merge", authenticateToken, async (req, res) => {
   }
 });
 
-// Add single product to cart
+/* ───────── Add Single Product to Cart ───────── */
 router.post("/add", authenticateToken, async (req, res) => {
   const { productId, quantity, orderId } = req.body;
   if (!productId) {
@@ -76,21 +92,20 @@ router.post("/add", authenticateToken, async (req, res) => {
       return res.json({ success: true, message: "Cart updated." });
     }
 
-    const newItem = new Cart({
+    await new Cart({
       userId: req.user.id,
       productId,
       quantity: quantity || 1,
       orderId: orderId || undefined,
-    });
+    }).save();
 
-    await newItem.save();
     res.status(201).json({ success: true, message: "Product added to cart." });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
 
-// Get user's cart
+/* ───────── Get User's Cart ───────── */
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const items = await Cart.find({ userId: req.user.id }).populate("productId");
@@ -100,7 +115,7 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Delete an item from cart
+/* ───────── Delete Item from Cart ───────── */
 router.delete("/:productId", authenticateToken, async (req, res) => {
   try {
     await Cart.findOneAndDelete({ userId: req.user.id, productId: req.params.productId });

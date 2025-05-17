@@ -42,11 +42,44 @@ function Cart() {
     }
   }, [cart]);
 
-  const handleCheckout = () => {
-    if (!cart.length) return alert('Cart is empty!');
+  const handleCheckout = async () => {
+    if (!cart.length) {
+      alert('Cart is empty!');
+      return;
+    }
+
     const token = localStorage.getItem('token');
-    if (!token) return alert('Please log in before checkout.');
-    navigate('/credit-card-form');
+    if (!token) {
+      alert('Please log in before checkout.');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:5001/cart/user/address', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert('Error fetching user address.');
+        return;
+      }
+
+      const address = data.address?.trim();
+      if (!address) {
+        alert('Please enter your address from the profile page to proceed with the purchase process.');
+        return;
+      }
+
+      navigate('/credit-card-form');
+
+    } catch (error) {
+      console.error('Error checking address:', error);
+      alert('Error checking address.');
+    }
   };
 
   const handleQuantityChange = async (item, newQuantity) => {
@@ -103,17 +136,24 @@ function Cart() {
                       className="quantity-btn"
                       onClick={() => handleQuantityChange(it, it.quantity - 1)}
                       disabled={it.quantity <= 1}
-                    >−</button>
+                    >
+                      −
+                    </button>
                     <span>{it.quantity}</span>
                     <button
                       className="quantity-btn"
                       onClick={() => handleQuantityChange(it, it.quantity + 1)}
-                    >+</button>
+                    >
+                      +
+                    </button>
                   </div>
                   <div className="cart-item-total">
                     ${(it.price * it.quantity).toFixed(2)}
                   </div>
-                  <button className="remove-btn" onClick={() => removeFromCart(it.id)}>
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeFromCart(it.id)}
+                  >
                     Remove
                   </button>
                 </div>

@@ -26,14 +26,14 @@ export default function ProductManagerPurchases() {
         });
         const json = await res.json();
         if (!res.ok || !json.success) return;
-        // Group by orderId
+
         const grouped = {};
         json.data.forEach((p) => {
           const key = p.orderId || "NO_ORDER_ID";
           grouped[key] ??= [];
           grouped[key].push(p);
         });
-        // Enrich each group
+
         const list = Object.entries(grouped).map(([orderId, items]) => {
           const ts = Number(orderId.split("-")[1]);
           const dateStr = !Number.isNaN(ts)
@@ -43,6 +43,7 @@ export default function ProductManagerPurchases() {
                 year: "numeric",
               })
             : "Unknown date";
+
           const grandTotal = items.reduce(
             (t, it) =>
               t +
@@ -50,11 +51,12 @@ export default function ProductManagerPurchases() {
                 (Number(it.productId?.price) || 0) * (it.quantity || 1)),
             0
           );
-          // Get user info from first item
+
           const user = items[0]?.userId;
+
           return { orderId, items, dateStr, grandTotal, user };
         });
-        // Newest first
+
         list.sort((a, b) => Number(b.orderId.split("-")[1]) - Number(a.orderId.split("-")[1]));
         setOrders(list);
         setTotalPages(Math.ceil(list.length / ordersPerPage));
@@ -90,9 +92,11 @@ export default function ProductManagerPurchases() {
               acc[it.status] = (acc[it.status] || 0) + 1;
               return acc;
             }, {});
+
             const statusSummary = Object.entries(statusCounts)
               .map(([s, c]) => `${c} ${s.replace(/^\w/, (ch) => ch.toUpperCase())}`)
               .join(", ");
+
             return (
               <div key={orderId} className="order-row">
                 <div className="order-info">
@@ -104,12 +108,17 @@ export default function ProductManagerPurchases() {
                   <div className="order-status">{statusSummary}</div>
                   <div className="order-user">
                     {user?.name ? (
-                      <span>User: {user.name} ({user.mail_adress})</span>
+                      <>
+                        <span>User: {user.name} ({user.mail_adress})</span>
+                        <br />
+                        <span>Address: {user.address || "No address provided"}</span>
+                      </>
                     ) : (
                       <span>User: Unknown</span>
                     )}
                   </div>
                 </div>
+
                 <div className="thumb-list">
                   {thumbs.map((it) => {
                     const src = it.productId?.image1
@@ -128,6 +137,7 @@ export default function ProductManagerPurchases() {
                     <span className="more-count">+{extraCount}&nbsp;more</span>
                   )}
                 </div>
+
                 <button
                   className="details-btn"
                   onClick={() =>
@@ -142,6 +152,7 @@ export default function ProductManagerPurchases() {
               </div>
             );
           })}
+
           {totalPages > 1 && (
             <div className="pagination">
               <button onClick={goToPreviousPage} disabled={currentPage === 1} className="pagination-btn">
