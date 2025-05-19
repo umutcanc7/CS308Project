@@ -89,7 +89,8 @@ export default function SalesManagerPage() {
               <div className="sales-card" key={product._id}>
                 <div className="sales-info">
                   <h3>{product.name}</h3>
-                  <p><strong>ID:</strong> {product.product_id}</p>
+                  {/* <p><strong>ID:</strong> {product.product_id}</p> */}
+                  <p><strong>ID:</strong> {product._id}</p>
                   <p><strong>Category:</strong> {product.category}</p>
                   {product.color && <p><strong>Color:</strong> {product.color}</p>}
                   {product.description && <p><strong>Description:</strong> {product.description}</p>}

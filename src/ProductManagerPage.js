@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+// src/ProductManagerPage.js
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "./ProductManagerPage.css";
 
@@ -9,7 +10,6 @@ export default function ProductManagerPage() {
   const [newCat, setNewCat] = useState("");
   const [stockEdits, setStockEdits] = useState({});
   const [newProd, setNewProd] = useState({
-    product_id: "",
     name: "",
     category: "",
     color: "",
@@ -21,17 +21,30 @@ export default function ProductManagerPage() {
   });
 
   const adminToken = localStorage.getItem("adminToken");
-  const navigate = useNavigate();
+  const navigate   = useNavigate();
 
-  const load = async () => {
-    const c = await fetch("http://localhost:5001/productmanager/categories").then(r => r.json());
+  /* ---------- load categories + products (send admin token) ---------- */
+  // const load = async () => {
+  const load = useCallback(async () => {
+    const headers = { Authorization: `Bearer ${adminToken}` };
+
+    const c = await fetch(
+      "http://localhost:5001/productmanager/categories",
+      { headers }
+    ).then(r => r.json());
     if (c.success) setCats(c.data);
-    const p = await fetch("http://localhost:5001/productmanager/products").then(r => r.json());
+
+    const p = await fetch(
+      "http://localhost:5001/productmanager/products",
+      { headers }
+    ).then(r => r.json());
     if (p.success) setProducts(p.data);
-  };
+  // };
+  }, [adminToken]);
 
-  useEffect(() => { load(); }, []);
-
+  // useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);  // linter happy
+  
   const addCategory = async e => {
     e.preventDefault();
     const name = newCat.trim();
@@ -64,7 +77,8 @@ export default function ProductManagerPage() {
     if (out.success) load();
   };
 
-  const handleStockChange = (id, val) => setStockEdits(p => ({ ...p, [id]: val }));
+  const handleStockChange = (id, val) =>
+    setStockEdits(p => ({ ...p, [id]: val }));
 
   const updateStock = async id => {
     const s = Number(stockEdits[id]);
@@ -102,13 +116,11 @@ export default function ProductManagerPage() {
 
   const addProduct = async e => {
     e.preventDefault();
-    const { product_id, name, category, image1, image2, image3 } = newProd;
-    if (!product_id || !name.trim() || !category || !image1 || !image2 || !image3) {
-      setStatus({ msg: "product_id, name, category and three image fields are required.", error: true });
+    const { name, category, image1, image2, image3 } = newProd;
+    if (!name.trim() || !category || !image1 || !image2 || !image3) {
+      setStatus({ msg: "name, category and three image fields are required.", error: true });
       return;
     }
-
-    const payload = { ...newProd, product_id: Number(product_id) };
 
     const out = await fetch("http://localhost:5001/productmanager/products", {
       method: "POST",
@@ -116,14 +128,15 @@ export default function ProductManagerPage() {
         "Content-Type": "application/json",
         Authorization: `Bearer ${adminToken}`
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(newProd)    // no product_id sent
     }).then(r => r.json());
 
     setStatus({ msg: out.msg || "Product added.", error: !out.success });
     if (out.success) {
       setNewProd({
-        product_id: "", name: "", category: "", color: "",
-        description: "", stock: 10, image1: "", image2: "", image3: ""
+        name: "", category: "", color: "",
+        description: "", stock: 10,
+        image1: "", image2: "", image3: ""
       });
       load();
     }
@@ -137,13 +150,19 @@ export default function ProductManagerPage() {
         <div className="admin-header-sections">
           <div className="admin-subsection">
             <h3 className="admin-subheading">Customers Purchases</h3>
-            <button onClick={() => navigate("/product-manager-purchases")} className="pm-purchases-btn white-btn">Purchases</button>
+            <button
+              onClick={() => navigate("/product-manager-purchases")}
+              className="pm-purchases-btn white-btn"
+            >
+              Purchases
+            </button>
           </div>
 
           <div className="admin-subsection">
             <h3 className="admin-subheading">Add New Category</h3>
             <form onSubmit={addCategory} className="admin-add-form">
-              <input className="admin-category-input"
+              <input
+                className="admin-category-input"
                 value={newCat}
                 onChange={e => setNewCat(e.target.value)}
                 placeholder="New category name"
@@ -153,7 +172,9 @@ export default function ProductManagerPage() {
           </div>
         </div>
 
-        {status.msg && <p className={status.error ? "status error" : "status ok"}>{status.msg}</p>}
+        {status.msg && (
+          <p className={status.error ? "status error" : "status ok"}>{status.msg}</p>
+        )}
       </div>
 
       <div className="admin-side-by-side">
@@ -163,7 +184,12 @@ export default function ProductManagerPage() {
             {cats.map(c => (
               <li className="admin-cat-item" key={c._id}>
                 <div>{c.name}</div>
-                <button className="admin-delete-btn" onClick={() => delCategory(c.name)}>🗑</button>
+                <button
+                  className="admin-delete-btn"
+                  onClick={() => delCategory(c.name)}
+                >
+                  🗑
+                </button>
               </li>
             ))}
           </ul>
@@ -172,35 +198,57 @@ export default function ProductManagerPage() {
         <div className="admin-section-box admin-half">
           <h2>Add New Product</h2>
           <form onSubmit={addProduct} className="admin-add-product-form">
-            <select value={newProd.category} onChange={e => setNewProd({ ...newProd, category: e.target.value })}>
+            <select
+              value={newProd.category}
+              onChange={e => setNewProd({ ...newProd, category: e.target.value })}
+            >
               <option value="">Select category</option>
-              {cats.map(c => <option key={c._id} value={c.name}>{c.name}</option>)}
+              {cats.map(c => (
+                <option key={c._id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
             </select>
-            <input placeholder="Product ID" type="number"
-              value={newProd.product_id} onChange={e => setNewProd({ ...newProd, product_id: e.target.value })}
+
+            <input
+              placeholder="Name"
+              value={newProd.name}
+              onChange={e => setNewProd({ ...newProd, name: e.target.value })}
             />
-            <input placeholder="Name"
-              value={newProd.name} onChange={e => setNewProd({ ...newProd, name: e.target.value })}
+            <input
+              placeholder="Color (optional)"
+              value={newProd.color}
+              onChange={e => setNewProd({ ...newProd, color: e.target.value })}
             />
-            <input placeholder="Color (optional)"
-              value={newProd.color} onChange={e => setNewProd({ ...newProd, color: e.target.value })}
+            <textarea
+              placeholder="Description (optional)"
+              value={newProd.description}
+              onChange={e => setNewProd({ ...newProd, description: e.target.value })}
             />
-            <textarea placeholder="Description (optional)"
-              value={newProd.description} onChange={e => setNewProd({ ...newProd, description: e.target.value })}
+            <input
+              placeholder="Initial stock"
+              type="number"
+              value={newProd.stock}
+              onChange={e => setNewProd({ ...newProd, stock: e.target.value })}
             />
-            <input placeholder="Initial stock" type="number"
-              value={newProd.stock} onChange={e => setNewProd({ ...newProd, stock: e.target.value })}
+            <input
+              placeholder="Image 1"
+              value={newProd.image1}
+              onChange={e => setNewProd({ ...newProd, image1: e.target.value })}
             />
-            <input placeholder="Image 1"
-              value={newProd.image1} onChange={e => setNewProd({ ...newProd, image1: e.target.value })}
+            <input
+              placeholder="Image 2"
+              value={newProd.image2}
+              onChange={e => setNewProd({ ...newProd, image2: e.target.value })}
             />
-            <input placeholder="Image 2"
-              value={newProd.image2} onChange={e => setNewProd({ ...newProd, image2: e.target.value })}
+            <input
+              placeholder="Image 3"
+              value={newProd.image3}
+              onChange={e => setNewProd({ ...newProd, image3: e.target.value })}
             />
-            <input placeholder="Image 3"
-              value={newProd.image3} onChange={e => setNewProd({ ...newProd, image3: e.target.value })}
-            />
-            <button className="white-btn" type="submit">Add Product (price = –1)</button>
+            <button className="white-btn" type="submit">
+              Add Product
+            </button>
           </form>
         </div>
       </div>
@@ -211,7 +259,7 @@ export default function ProductManagerPage() {
           {products.map(p => (
             <li className="admin-stock-item" key={p._id}>
               <div className="admin-stock-left">
-                <strong>{p.name}</strong> — ID: {p.product_id} (Stock: {p.stock})
+                <strong>{p.name}</strong> (Stock: {p.stock})
               </div>
               <div className="admin-stock-right">
                 <input
@@ -221,7 +269,12 @@ export default function ProductManagerPage() {
                   onChange={e => handleStockChange(p._id, e.target.value)}
                 />
                 <button onClick={() => updateStock(p._id)}>Update</button>
-                <button className="admin-delete-btn" onClick={() => removeProduct(p._id)}>🗑</button>
+                <button
+                  className="admin-delete-btn"
+                  onClick={() => removeProduct(p._id)}
+                >
+                  🗑
+                </button>
               </div>
             </li>
           ))}

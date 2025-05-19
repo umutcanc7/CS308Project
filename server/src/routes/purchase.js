@@ -47,59 +47,70 @@ const transporter = nodemailer.createTransport({
 });
 
 /* 📄 ------------------------------------------------------------ PDF maker */
-function buildReceiptPDF({ orderId, items, overallTotal }) {
+function buildReceiptPDF({
+  orderId,
+  items,
+  overallTotal,
+  purchaseDate = Date.now()       // ← NEW optional field
+}) {
   return new Promise((resolve, reject) => {
     try {
-      const doc = new PDFDocument({ size: "A4", margin: 40 });
+      const doc  = new PDFDocument({ size:"A4", margin:40 });
       const bufs = [];
       doc.on("data", d => bufs.push(d));
-      doc.on("end", () => resolve(Buffer.concat(bufs)));
+      doc.on("end",  () => resolve(Buffer.concat(bufs)));
 
-      /* Header */
-      doc.fontSize(26).text("SwagLab", { align: "center" }).moveDown();
+      /* ---------- Header ---------- */
+      doc.fontSize(26).text("SwagLab", { align:"center" }).moveDown();
 
-      const today = new Date().toLocaleDateString("tr-TR");
-      doc.fontSize(12).text(today, { align: "right" }).moveDown(1.5);
+      /* use real purchase date (defaults to “today” if not provided) */
+      const dateStr = new Date(purchaseDate).toLocaleDateString("tr-TR");
+      doc.fontSize(12).text(dateStr, { align:"right" }).moveDown(1.5);
 
       doc.text(`Order Number: ${orderId}`).moveDown();
 
+      /* ---------- Items table (unchanged) ---------- */
       items.forEach(it => {
         doc.font("Helvetica-Bold").text(it.name);
         doc.font("Helvetica").text(it.code || "");
 
-        // Calculate effective unit price for display
+        /* … existing pricing logic … */
         let effectivePrice = null;
-        if (typeof it.discountedPrice === 'number') {
+        if (typeof it.discountedPrice === "number") {
           effectivePrice = it.discountedPrice;
-        } else if (typeof it.originalPrice === 'number') {
+        } else if (typeof it.originalPrice === "number") {
           effectivePrice = it.originalPrice;
-        } else if (typeof it.lineTotal === 'number' && it.quantity) {
+        } else if (typeof it.lineTotal === "number" && it.quantity) {
           effectivePrice = it.lineTotal / it.quantity;
-        } else if (typeof it.totalPrice === 'number' && it.quantity) {
+        } else if (typeof it.totalPrice === "number" && it.quantity) {
           effectivePrice = it.totalPrice / it.quantity;
-        } else if (it.productId && typeof it.productId.price === 'number') {
+        } else if (it.productId && typeof it.productId.price === "number") {
           effectivePrice = it.productId.price;
         } else {
           effectivePrice = 0;
         }
 
-        // Show price info
-        if (typeof it.discountedPrice === 'number' && typeof it.discountAmount === 'number') {
-          doc.font("Helvetica").text(`Original Price: ${Number(it.originalPrice).toFixed(2)} EUR`);
-          doc.font("Helvetica-Bold").text(`Discounted Price: ${Number(it.discountedPrice).toFixed(2)} EUR (${it.discountAmount}% off)`, { color: '#e74c3c' });
-        } else if (typeof it.originalPrice === 'number') {
-          doc.font("Helvetica").text(`Price: ${Number(it.originalPrice).toFixed(2)} EUR`);
+        if (typeof it.discountedPrice === "number" && typeof it.discountAmount === "number") {
+          doc.font("Helvetica")
+             .text(`Original Price: ${Number(it.originalPrice).toFixed(2)} EUR`);
+          doc.font("Helvetica-Bold")
+             .text(`Discounted Price: ${Number(it.discountedPrice).toFixed(2)} EUR (${it.discountAmount}% off)`, { color:"#e74c3c" });
+        } else if (typeof it.originalPrice === "number") {
+          doc.font("Helvetica")
+             .text(`Price: ${Number(it.originalPrice).toFixed(2)} EUR`);
         } else {
-          doc.font("Helvetica").text(`Price: ${Number(effectivePrice).toFixed(2)} EUR`);
+          doc.font("Helvetica")
+             .text(`Price: ${Number(effectivePrice).toFixed(2)} EUR`);
         }
 
-        doc.moveUp().text(`${it.quantity} × ${Number(effectivePrice).toFixed(2)} EUR`, { align: "right" });
+        doc.moveUp()
+           .text(`${it.quantity} × ${Number(effectivePrice).toFixed(2)} EUR`, { align:"right" });
         doc.moveDown();
       });
 
       doc.moveDown();
-      doc.font("Helvetica-Bold").text("TOTAL", { align: "right" });
-      doc.text(`${overallTotal.toFixed(2)} EUR`, { align: "right" });
+      doc.font("Helvetica-Bold").text("TOTAL", { align:"right" });
+      doc.text(`${overallTotal.toFixed(2)} EUR`, { align:"right" });
 
       doc.end();
     } catch (e) { reject(e); }
@@ -533,29 +544,36 @@ router.get("/admin/receipt/:orderId", requireAdmin, async (req, res) => {
       .populate("productId");
 
     if (!purchases.length)
-      return res.status(404).json({ success: false, error: "Order not found." });
+      return res.status(404).json({ success:false, error:"Order not found." });
+
+    /* NEW ↓ take the date from the first purchase in this order */
+    const purchaseDate = purchases[0].purchaseDate;
 
     const items = purchases.map(p => ({
-      name: p.productId.name,
-      code: p.productId.barcode || p.productId._id,
-      quantity: p.quantity,
-      originalPrice: p.originalPrice,
-      // Only include discount information if it exists
+      name:  p.productId.name,
+      code:  p.productId.barcode || p.productId._id,
+      quantity:        p.quantity,
+      originalPrice:   p.originalPrice,
       ...(p.discountedPrice && {
         discountedPrice: p.discountedPrice,
-        discountAmount: p.discountAmount
+        discountAmount:  p.discountAmount
       }),
       lineTotal: p.totalPrice
     }));
     const overallTotal = items.reduce((t, i) => t + i.lineTotal, 0);
 
-    const pdfBase64 = (await buildReceiptPDF({ orderId, items, overallTotal }))
-      .toString("base64");
+    /* NEW arg ↓ */
+    const pdfBase64 = (await buildReceiptPDF({
+      orderId,
+      items,
+      overallTotal,
+      purchaseDate      // ← pass it forward
+    })).toString("base64");
 
-    res.json({ success: true, pdfBase64 });
+    res.json({ success:true, pdfBase64 });
   } catch (e) {
     console.error("🔥  Error in GET /purchase/admin/receipt:", e);
-    res.status(500).json({ success: false, error: `Server error: ${e.message}` });
+    res.status(500).json({ success:false, error:`Server error: ${e.message}` });
   }
 });
 

@@ -3,7 +3,8 @@ const mongoose  = require("mongoose");
 const Category  = require("./Category");      // <-- NEW
 
 const ProductSchema = new mongoose.Schema({
-  product_id:    { type: Number, required: true, unique: true },
+  // product_id:    { type: Number, required: true, unique: true },
+  product_id:    { type: Number, unique: true },
   name:          { type: String,  required: true },
   price:         { type: Number,  required: true },
 

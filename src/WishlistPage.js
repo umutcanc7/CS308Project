@@ -1,16 +1,11 @@
-// src/WishlistPage.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./WishlistPage.css";
 
 const images = require.context("./assets", false, /\.(png|jpe?g|webp|svg)$/);
-
 const getImage = (name) => {
-  try {
-    return images(`./${name}`);
-  } catch {
-    return images("./logo.png");
-  }
+  try { return images(`./${name}`); }
+  catch { return images("./logo.png"); }
 };
 
 function WishlistPage() {
@@ -22,44 +17,29 @@ function WishlistPage() {
     if (!token) return;
 
     try {
-      const res = await fetch("http://localhost:5001/wishlist", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res  = await fetch("http://localhost:5001/wishlist",
+                               { headers:{ Authorization:`Bearer ${token}` } });
       const data = await res.json();
       if (data.success) setWishlist(data.data);
-
-      // ✅ Update top bar count
       if (window.updateWishlistCount) window.updateWishlistCount();
-    } catch (err) {
-      console.error("Failed to fetch wishlist:", err);
-    }
+    } catch (err) { console.error("Failed to fetch wishlist:", err); }
   };
 
   const removeFromWishlist = async (productId) => {
     const token = localStorage.getItem("token");
     try {
       await fetch(`http://localhost:5001/wishlist/${productId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        method:"DELETE",
+        headers:{ Authorization:`Bearer ${token}` },
       });
-
-      setWishlist((prev) =>
-        prev.filter((item) => {
-          const id = item.productId?._id || item.productId;
-          return id !== productId;
-        })
+      setWishlist(prev =>
+        prev.filter(it => (it.productId?._id || it.productId) !== productId)
       );
-
-      // ✅ Update top bar count
       if (window.updateWishlistCount) window.updateWishlistCount();
-    } catch (err) {
-      console.error("Failed to remove from wishlist:", err);
-    }
+    } catch (err) { console.error("Failed to remove:", err); }
   };
 
-  useEffect(() => {
-    fetchWishlist();
-  }, []);
+  useEffect(() => { fetchWishlist(); }, []);
 
   return (
     <div className="wishlist-page">
@@ -71,28 +51,43 @@ function WishlistPage() {
         <div className="wishlist-items">
           {wishlist.map((item) => {
             const product = typeof item.productId === "object" ? item.productId : null;
-            if (!product || !product.name) return null;
+            if (!product) return null;
 
             return (
               <div key={item._id} className="wishlist-card">
                 <img
-                  src={getImage(product.image1)}
-                  alt={product.name}
+                  src={getImage(product.image1)} alt={product.name}
                   className="wishlist-image"
                   onClick={() => navigate(`/product/${product._id}`)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor:"pointer" }}
                 />
-                <h3
-                  onClick={() => navigate(`/product/${product._id}`)}
-                  style={{ cursor: "pointer" }}
-                >
+
+                <h3 onClick={() => navigate(`/product/${product._id}`)}
+                    style={{ cursor:"pointer" }}>
                   {product.name}
                 </h3>
-                <p>${product.price.toFixed(2)}</p>
-                <button
-                  className="remove-btn"
-                  onClick={() => removeFromWishlist(product._id)}
-                >
+
+                {/* -------- Price block (mimics Shop.js) -------- */}
+                <div className="wishlist-price-section">
+                  {product.discountedPrice ? (
+                    <>
+                      <span className="product-price original-price">
+                        ${product.price.toFixed(2)}
+                      </span>
+                      <span className="product-price discounted-price">
+                        ${product.discountedPrice.toFixed(2)}
+                      </span>
+                      <span className="sale-indicator">On Sale</span>
+                    </>
+                  ) : (
+                    <span className="product-price">
+                      ${product.price.toFixed(2)}
+                    </span>
+                  )}
+                </div>
+
+                <button className="remove-btn"
+                        onClick={() => removeFromWishlist(product._id)}>
                   Remove
                 </button>
               </div>
@@ -103,5 +98,4 @@ function WishlistPage() {
     </div>
   );
 }
-
 export default WishlistPage;

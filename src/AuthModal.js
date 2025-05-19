@@ -116,6 +116,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn,
   
         /* ---------- REGULAR USER ---------- */
         localStorage.setItem("token", data.token);
+        localStorage.setItem("showSaleNotification", "true");  // ← NEW
   
         try {
           /* fetch profile so we can cache it locally */
@@ -135,7 +136,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn,
           /* non-fatal – continue the flow */
         }
   
-        alert("Login successful");
+        // alert("Login successful");
         setIsSignedIn(true);
         await mergeCart(data.token);   // merge local cart with backend
         await refreshCart();           // reload cart context

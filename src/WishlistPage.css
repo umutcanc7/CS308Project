@@ -102,3 +102,35 @@
 .remove-btn:hover {
   background: #c7001b;
 }
+
+/* --- price section (matches Shop.css design) --- */
+.wishlist-price-section{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+
+  min-height:70px;
+}
+
+.product-price{ font-size:1rem; font-weight:600; color:#555; }
+
+.original-price{
+  text-decoration:line-through;
+  color:#999;
+  font-size:0.95rem;
+}
+
+.discounted-price{
+  color:#e74c3c;
+  font-weight:bold;
+  font-size:1.05rem;
+}
+
+.sale-indicator{
+  color:#e74c3c;
+  font-weight:bold;
+  font-size:0.85rem;
+  margin-top:4px;
+}
+

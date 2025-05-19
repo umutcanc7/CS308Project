@@ -68,6 +68,7 @@ export default function App() {
     localStorage.removeItem("token");
     localStorage.removeItem("adminToken");
     localStorage.removeItem("salesAdminToken");
+    localStorage.removeItem("showSaleNotification");
     setIsSignedIn(false);
     navigate("/home");
   };

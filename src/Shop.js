@@ -1,7 +1,9 @@
+// Shop.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Shop.css";
 import { useCart } from "./CartContext";
+import SaleNotification from "./SaleNotification";   // ← NEW
 
 function Shop({ isSignedIn }) {
   const { addToCart, getTotalItems, cart, updateQuantity } = useCart();
@@ -95,6 +97,7 @@ function Shop({ isSignedIn }) {
   /* Render */
   return (
     <div className="shop-page">
+      <SaleNotification />
       <header className="shop-header">
         <h2>Our Collection</h2>
         <p>Discover our exclusive range of apparel and accessories.</p>
