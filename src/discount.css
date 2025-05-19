@@ -1,0 +1,119 @@
+.discount-page {
+  padding: 40px 20px;
+  background-color: #f5f5dc;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.discount-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.discount-header h2 {
+  font-size: 28px;
+  color: #222;
+  margin-bottom: 16px;
+}
+
+.discount-controls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.discount-controls input {
+  padding: 10px;
+  width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fff;
+  font-size: 14px;
+}
+
+.discount-products {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 750px;
+  max-width: 1500px;  /* Ensured max width */
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.discount-card {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.discount-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.discount-info h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #333;
+}
+
+.discount-info p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.discount-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;  /* Increased spacing */
+}
+
+.discount-actions input {
+  width: 90px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.discount-actions button {
+  width: 125px;
+  background-color: #28a745;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.discount-actions button:hover {
+  background-color: #218838;
+}
+
+.discount-indicator {
+  color: red;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.no-products {
+  text-align: center;
+  font-size: 16px;
+  color: #888;
+  margin-top: 20px;
+}

@@ -48,31 +48,58 @@ const transporter = nodemailer.createTransport({
 
 /* 📄 ------------------------------------------------------------ PDF maker */
 function buildReceiptPDF({ orderId, items, overallTotal }) {
-  return new Promise((resolve, reject)=>{
+  return new Promise((resolve, reject) => {
     try {
-      const doc   = new PDFDocument({ size:"A4", margin:40 });
-      const bufs  = [];
-      doc.on("data", d=>bufs.push(d));
-      doc.on("end", ()=>resolve(Buffer.concat(bufs)));
+      const doc = new PDFDocument({ size: "A4", margin: 40 });
+      const bufs = [];
+      doc.on("data", d => bufs.push(d));
+      doc.on("end", () => resolve(Buffer.concat(bufs)));
 
       /* Header */
-      doc.fontSize(26).text("SwagLab", { align:"center" }).moveDown();
+      doc.fontSize(26).text("SwagLab", { align: "center" }).moveDown();
 
       const today = new Date().toLocaleDateString("tr-TR");
-      doc.fontSize(12).text(today, { align:"right" }).moveDown(1.5);
+      doc.fontSize(12).text(today, { align: "right" }).moveDown(1.5);
 
       doc.text(`Order Number: ${orderId}`).moveDown();
 
-      items.forEach(it=>{
+      items.forEach(it => {
         doc.font("Helvetica-Bold").text(it.name);
         doc.font("Helvetica").text(it.code || "");
-        doc.moveUp().text(`${it.quantity} × ${it.unitPrice.toFixed(2)} EUR`, { align:"right" });
+
+        // Calculate effective unit price for display
+        let effectivePrice = null;
+        if (typeof it.discountedPrice === 'number') {
+          effectivePrice = it.discountedPrice;
+        } else if (typeof it.originalPrice === 'number') {
+          effectivePrice = it.originalPrice;
+        } else if (typeof it.lineTotal === 'number' && it.quantity) {
+          effectivePrice = it.lineTotal / it.quantity;
+        } else if (typeof it.totalPrice === 'number' && it.quantity) {
+          effectivePrice = it.totalPrice / it.quantity;
+        } else if (it.productId && typeof it.productId.price === 'number') {
+          effectivePrice = it.productId.price;
+        } else {
+          effectivePrice = 0;
+        }
+
+        // Show price info
+        if (typeof it.discountedPrice === 'number' && typeof it.discountAmount === 'number') {
+          doc.font("Helvetica").text(`Original Price: ${Number(it.originalPrice).toFixed(2)} EUR`);
+          doc.font("Helvetica-Bold").text(`Discounted Price: ${Number(it.discountedPrice).toFixed(2)} EUR (${it.discountAmount}% off)`, { color: '#e74c3c' });
+        } else if (typeof it.originalPrice === 'number') {
+          doc.font("Helvetica").text(`Price: ${Number(it.originalPrice).toFixed(2)} EUR`);
+        } else {
+          doc.font("Helvetica").text(`Price: ${Number(effectivePrice).toFixed(2)} EUR`);
+        }
+
+        doc.moveUp().text(`${it.quantity} × ${Number(effectivePrice).toFixed(2)} EUR`, { align: "right" });
         doc.moveDown();
       });
 
       doc.moveDown();
-      doc.font("Helvetica-Bold").text("TOTAL", { align:"right" });
-      doc.text(`${overallTotal.toFixed(2)} EUR`, { align:"right" });
+      doc.font("Helvetica-Bold").text("TOTAL", { align: "right" });
+      doc.text(`${overallTotal.toFixed(2)} EUR`, { align: "right" });
 
       doc.end();
     } catch (e) { reject(e); }
@@ -106,25 +133,38 @@ router.post("/", authenticateToken, async (req,res)=>{
       p.stock -= item.quantity;
       await p.save();
 
-      const lineTotal  = item.quantity * p.price;
-      overallTotal    += lineTotal;
+      // Get the effective price (discounted if available)
+      const effectivePrice = item.discountedPrice || item.price;
+      const lineTotal = item.quantity * effectivePrice;
+      overallTotal += lineTotal;
 
       /* ⬇️ Every line reuses the SAME orderId */
       await new Purchase({
         userId,
-        productId : p._id,
-        quantity  : item.quantity,
+        productId: p._id,
+        quantity: item.quantity,
         totalPrice: lineTotal,
-        status    : "processing",
-        orderId,
+        originalPrice: item.price,
+        // Only store discount information if it exists
+        ...(item.discountedPrice && {
+          discountedPrice: item.discountedPrice,
+          discountAmount: item.discountAmount
+        }),
+        status: "processing",
+        orderId
       }).save();
 
       receiptItems.push({
-        name      : p.name,
-        code      : p.barcode || p._id,
-        quantity  : item.quantity,
-        unitPrice : p.price,
-        lineTotal,
+        name: p.name,
+        code: p.barcode || p._id,
+        quantity: item.quantity,
+        originalPrice: item.price,
+        // Only include discount information if it exists
+        ...(item.discountedPrice && {
+          discountedPrice: item.discountedPrice,
+          discountAmount: item.discountAmount
+        }),
+        lineTotal
       });
     }
 
@@ -180,22 +220,27 @@ router.get("/receipt/:orderId", authenticateToken, async (req,res)=>{
     if (!purchases.length)
       return res.status(404).json({ success:false, error:"Order not found." });
 
-    const items = purchases.map(p=>({
-      name      : p.productId.name,
-      code      : p.productId.barcode || p.productId._id,
-      quantity  : p.quantity,
-      unitPrice : p.productId.price,
-      lineTotal : p.totalPrice,
+    const items = purchases.map(p => ({
+      name: p.productId.name,
+      code: p.productId.barcode || p.productId._id,
+      quantity: p.quantity,
+      originalPrice: p.originalPrice,
+      // Only include discount information if it exists
+      ...(p.discountedPrice && {
+        discountedPrice: p.discountedPrice,
+        discountAmount: p.discountAmount
+      }),
+      lineTotal: p.totalPrice
     }));
-    const overallTotal = items.reduce((t,i)=>t+i.lineTotal, 0);
+    const overallTotal = items.reduce((t, i) => t + i.lineTotal, 0);
 
     const pdfBase64 = (await buildReceiptPDF({ orderId, items, overallTotal }))
       .toString("base64");
 
-    res.json({ success:true, pdfBase64 });
+    res.json({ success: true, pdfBase64 });
   } catch (e) {
     console.error("🔥  Error in GET /purchase/receipt:", e);
-    res.status(500).json({ success:false, error:`Server error: ${e.message}` });
+    res.status(500).json({ success: false, error: `Server error: ${e.message}` });
   }
 });
 
@@ -416,24 +461,29 @@ router.get("/admin/receipt/:orderId", requireAdmin, async (req, res) => {
       .populate("productId");
 
     if (!purchases.length)
-      return res.status(404).json({ success:false, error:"Order not found." });
+      return res.status(404).json({ success: false, error: "Order not found." });
 
     const items = purchases.map(p => ({
-      name      : p.productId.name,
-      code      : p.productId.barcode || p.productId._id,
-      quantity  : p.quantity,
-      unitPrice : p.productId.price,
-      lineTotal : p.totalPrice,
+      name: p.productId.name,
+      code: p.productId.barcode || p.productId._id,
+      quantity: p.quantity,
+      originalPrice: p.originalPrice,
+      // Only include discount information if it exists
+      ...(p.discountedPrice && {
+        discountedPrice: p.discountedPrice,
+        discountAmount: p.discountAmount
+      }),
+      lineTotal: p.totalPrice
     }));
     const overallTotal = items.reduce((t, i) => t + i.lineTotal, 0);
 
     const pdfBase64 = (await buildReceiptPDF({ orderId, items, overallTotal }))
       .toString("base64");
 
-    res.json({ success:true, pdfBase64 });
+    res.json({ success: true, pdfBase64 });
   } catch (e) {
     console.error("🔥  Error in GET /purchase/admin/receipt:", e);
-    res.status(500).json({ success:false, error:`Server error: ${e.message}` });
+    res.status(500).json({ success: false, error: `Server error: ${e.message}` });
   }
 });
 

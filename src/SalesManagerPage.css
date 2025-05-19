@@ -41,6 +41,22 @@
   background-color: #0056b3;
 }
 
+.discount-button {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.discount-button:hover {
+  background-color: #218838;
+}
+
 .sales-section {
   background-color: white;
   border-radius: 10px;

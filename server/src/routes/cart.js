@@ -3,6 +3,7 @@ const router = express.Router();
 const Cart = require("../models/Cart");
 const User = require("../models/User");
 const jwt = require("jsonwebtoken");
+const Product = require("../models/Product");
 
 // Token verification middleware
 function authenticateToken(req, res, next) {
@@ -77,26 +78,40 @@ router.post("/merge", authenticateToken, async (req, res) => {
 
 /* ───────── Add Single Product to Cart ───────── */
 router.post("/add", authenticateToken, async (req, res) => {
-  const { productId, quantity, orderId } = req.body;
+  const { productId, quantity, orderId, setQuantity } = req.body;
   if (!productId) {
     return res.status(400).json({ success: false, error: "Product ID is required." });
   }
 
   try {
+    // Get the product to access its price information
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ success: false, error: "Product not found." });
+    }
+
     const existingItem = await Cart.findOne({ userId: req.user.id, productId });
 
     if (existingItem) {
-      existingItem.quantity += quantity || 1;
+      if (setQuantity) {
+        existingItem.quantity = quantity || 1;  // Set exact quantity
+      } else {
+        existingItem.quantity += quantity || 1;  // Add to existing quantity
+      }
       if (orderId) existingItem.orderId = orderId;
       await existingItem.save();
       return res.json({ success: true, message: "Cart updated." });
     }
 
+    // Create new cart item with price information
     await new Cart({
       userId: req.user.id,
       productId,
       quantity: quantity || 1,
       orderId: orderId || undefined,
+      price: product.price,
+      discountedPrice: product.discountedPrice || null,
+      discountAmount: product.discountAmount || null
     }).save();
 
     res.status(201).json({ success: true, message: "Product added to cart." });
@@ -109,7 +124,18 @@ router.post("/add", authenticateToken, async (req, res) => {
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const items = await Cart.find({ userId: req.user.id }).populate("productId");
-    res.json({ success: true, data: items });
+    // Transform the data to include price information
+    const transformedItems = items.map(item => ({
+      ...item.toObject(),
+      productId: {
+        ...item.productId.toObject(),
+        // Use the stored price information instead of current product price
+        price: item.price,
+        discountedPrice: item.discountedPrice,
+        discountAmount: item.discountAmount
+      }
+    }));
+    res.json({ success: true, data: transformedItems });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }

@@ -6,6 +6,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden; /* Prevent background scroll bar */
   }
   
   /* Credit Card formunun genel stili */

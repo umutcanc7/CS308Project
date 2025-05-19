@@ -1,6 +1,4 @@
-// .env dosyasındaki değişkenleri yüklemek için dotenv'i dahil et
 require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,7 +6,7 @@ const connectDB = require('./config');
 
 const app = express();
 
-// MongoDB'yi bağla
+// Connect to MongoDB
 connectDB();
 
 // Middleware
@@ -19,7 +17,7 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
 // Import Routes
-const authRoutes = require('./routes/auth');    
+const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
 const productRoutes = require('./routes/products');
@@ -34,37 +32,39 @@ app.use('/cart', cartRoutes);
 const purchaseRoutes = require('./routes/purchase');
 app.use('/purchase', purchaseRoutes);
 
-const refundRoutes = require("./routes/refund");
-app.use("/api/refund", refundRoutes);
+const refundRoutes = require('./routes/refund');
+app.use('/api/refund', refundRoutes);
 
-const pmRoutes = require("./routes/productmanager");
-app.use("/productmanager", pmRoutes);
+const pmRoutes = require('./routes/productmanager');
+app.use('/productmanager', pmRoutes);
 
-const salesManagerRoutes = require("./routes/salesmanager");
-app.use("/salesmanager", salesManagerRoutes);
+const salesManagerRoutes = require('./routes/salesmanager');
+app.use('/salesmanager', salesManagerRoutes);
 
-const wishlistRoutes = require("./routes/wishlist");
-app.use("/wishlist", wishlistRoutes);
+const wishlistRoutes = require('./routes/wishlist');
+app.use('/wishlist', wishlistRoutes);
 
-// NEW: Profile Routes
-const profileRoutes = require("./routes/profile");  // ADD THIS
-app.use("/user", profileRoutes);                     // ADD THIS
+const profileRoutes = require('./routes/profile');
+app.use('/user', profileRoutes);
+
+// ✅ Apply Discount Route
+const applyDiscountRoutes = require('./routes/applyDiscount');
+app.use('/apply-discount', applyDiscountRoutes);
 
 // Frontend Pages
 app.get('/', (req, res) => {
-    res.render('login');
+  res.render('login');
 });
 
 app.get('/login', (req, res) => {
-    res.render('login');
+  res.render('login');
 });
 
 app.get('/signup', (req, res) => {
-    res.render('signup');
+  res.render('signup');
 });
 
-// Start server
 const port = process.env.PORT || 5001;
 app.listen(port, () => {
-    console.log(`🚀 Server running on Port: ${port}`);
+  console.log(`Server running on Port: ${port}`);
 });

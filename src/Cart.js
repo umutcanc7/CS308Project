@@ -129,7 +129,15 @@ function Cart() {
                   />
                   <div className="cart-item-details">
                     <h3>{it.name}</h3>
-                    <p className="cart-item-price">${it.price.toFixed(2)}</p>
+                    {it.discountedPrice ? (
+                      <div className="cart-item-price">
+                        <span className="original-price">${it.price.toFixed(2)}</span>
+                        <span className="discounted-price">${it.discountedPrice.toFixed(2)}</span>
+                        <span className="discount-badge">-{it.discountAmount}%</span>
+                      </div>
+                    ) : (
+                      <p className="cart-item-price">${it.price.toFixed(2)}</p>
+                    )}
                   </div>
                   <div className="cart-item-quantity">
                     <button
@@ -148,7 +156,7 @@ function Cart() {
                     </button>
                   </div>
                   <div className="cart-item-total">
-                    ${(it.price * it.quantity).toFixed(2)}
+                    ${((it.discountedPrice || it.price) * it.quantity).toFixed(2)}
                   </div>
                   <button
                     className="remove-btn"

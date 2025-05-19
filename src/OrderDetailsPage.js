@@ -78,10 +78,18 @@ export default function OrderDetailsPage() {
         );
         setTotal(
           filtered.reduce(
-            (t, it) =>
-              t +
-              (Number(it.totalPrice) ||
-                (Number(it.productId?.price) || 0) * (it.quantity || 1)),
+            (t, it) => {
+              // First try to use totalPrice if available
+              if (Number(it.totalPrice)) {
+                return t + Number(it.totalPrice);
+              }
+              // Then try to use discountedPrice if available
+              if (it.discountedPrice) {
+                return t + (it.discountedPrice * (it.quantity || 1));
+              }
+              // Finally fall back to product price
+              return t + ((Number(it.productId?.price) || 0) * (it.quantity || 1));
+            },
             0
           )
         );

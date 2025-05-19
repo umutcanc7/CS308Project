@@ -1,4 +1,3 @@
-// Shop.js
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Shop.css";
@@ -14,7 +13,7 @@ function Shop({ isSignedIn }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  /* --------------------------- Fetch products & cats -------------------------- */
+  /* Fetch Products */
   useEffect(() => {
     fetch("http://localhost:5001/products/sort?by=name&order=asc")
       .then((res) => res.json())
@@ -22,26 +21,20 @@ function Shop({ isSignedIn }) {
       .catch(console.error);
   }, []);
 
-  // useEffect(() => {
-  //   fetch("http://localhost:5001/products/categories")
-  //     .then((res) => res.json())
-  //     .then((data) => data.success && setCategories(data.data))
-  //     .catch(console.error);
-  // }, []);
-
+  /* Fetch Categories */
   useEffect(() => {
-    fetch("http://localhost:5001/productmanager/categories")     // ← new source
-      .then(res => res.json())
-      .then(json => {
+    fetch("http://localhost:5001/productmanager/categories")
+      .then((res) => res.json())
+      .then((json) => {
         if (json.success) {
-          const names = json.data.map(c => c.name);   // [{ _id, name }] → ["name"]
+          const names = json.data.map((c) => c.name);
           setCategories(names);
         }
       })
       .catch(console.error);
   }, []);
 
-  /* ------------------------------ Image helper ------------------------------- */
+  /* Image Helper */
   const getImage = (imageName) => {
     try {
       return require(`./assets/${imageName}`);
@@ -50,31 +43,36 @@ function Shop({ isSignedIn }) {
     }
   };
 
-  /* --------------------------- Add-to-Cart logic ----------------------------- */
+  /* Add to Cart */
   const handleAddToCart = async (product) => {
     const existing = cart.find((item) => item.id === product._id);
     const quantity = existing?.quantity || 0;
-    if (quantity + 1 > product.stock)
-      return alert(`❌ Only ${product.stock} in stock.`);
+    if (quantity + 1 > product.stock) {
+      alert(`❌ Only ${product.stock} in stock.`);
+      return;
+    }
 
-    if (existing) await updateQuantity(product._id, quantity + 1);
-    else
-      await addToCart({
-        ...product,
-        id: product._id,
-        image: product.image1,
-      });
+    const productData = {
+      ...product,
+      id: product._id,
+      image: product.image1,
+    };
+
+    if (existing) {
+      await updateQuantity(product._id, quantity + 1);
+    } else {
+      await addToCart(productData);
+    }
   };
 
-  /* ----------------------- Search / category / sorting ----------------------- */
+  /* Search and Sort Logic */
   const filteredProducts = products.filter((p) => {
     const q = searchQuery.toLowerCase();
     const matchSearch =
       p.name.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
-      ||p.description.toLowerCase().includes(q);
-    const matchCat =
-      selectedCategory === "All" || p.category === selectedCategory;
+      p.category.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q);
+    const matchCat = selectedCategory === "All" || p.category === selectedCategory;
     return matchSearch && matchCat;
   });
 
@@ -91,11 +89,10 @@ function Shop({ isSignedIn }) {
       valB = valB.toLowerCase();
     }
 
-    if (order === "asc") return valA > valB ? 1 : -1;
-    return valA < valB ? 1 : -1;
+    return order === "asc" ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
   });
 
-  /* --------------------------------- Render --------------------------------- */
+  /* Render */
   return (
     <div className="shop-page">
       <header className="shop-header">
@@ -115,10 +112,7 @@ function Shop({ isSignedIn }) {
             ))}
           </select>
 
-          <select
-            value={sortOption}
-            onChange={(e) => setSortOption(e.target.value)}
-          >
+          <select value={sortOption} onChange={(e) => setSortOption(e.target.value)}>
             <option value="name_asc">A to Z</option>
             <option value="name_desc">Z to A</option>
             <option value="price_asc">Price: Low to High</option>
@@ -144,21 +138,26 @@ function Shop({ isSignedIn }) {
               onClick={() => navigate(`/product/${p._id}`)}
               style={{ cursor: "pointer" }}
             >
-              <img
-                src={getImage(p.image1)}
-                alt={p.name}
-                className="product-image"
-              />
+              <img src={getImage(p.image1)} alt={p.name} className="product-image" />
             </div>
 
-            <h3
-              onClick={() => navigate(`/product/${p._id}`)}
-              style={{ cursor: "pointer" }}
-            >
+            <h3 onClick={() => navigate(`/product/${p._id}`)} style={{ cursor: "pointer" }}>
               {p.name}
             </h3>
 
-            <p className="product-price">${p.price.toFixed(2)}</p>
+            {/* Price Display */}
+            <div className="product-price-section">
+              {p.discountedPrice ? (
+                <>
+                  <span className="product-price original-price">${p.price.toFixed(2)}</span>
+                  <span className="product-price discounted-price">${p.discountedPrice.toFixed(2)}</span>
+                  <span className="sale-indicator">On Sale</span>
+                </>
+              ) : (
+                <span className="product-price">${p.price.toFixed(2)}</span>
+              )}
+            </div>
+
             <p className="product-description">{p.category}</p>
 
             <div className="product-rating">
@@ -166,19 +165,12 @@ function Shop({ isSignedIn }) {
                 <div>
                   <span className="stars">
                     {Array.from({ length: 5 }, (_, i) => (
-                      <span
-                        key={i}
-                        className={`star ${
-                          i < Math.round(p.averageRating) ? "filled" : ""
-                        }`}
-                      >
+                      <span key={i} className={`star ${i < Math.round(p.averageRating) ? "filled" : ""}`}>
                         ★
                       </span>
                     ))}
                   </span>
-                  <span className="rating-count">
-                    ({p.averageRating.toFixed(1)})
-                  </span>
+                  <span className="rating-count">({p.averageRating.toFixed(1)})</span>
                 </div>
               ) : (
                 <span className="no-ratings">No reviews yet</span>

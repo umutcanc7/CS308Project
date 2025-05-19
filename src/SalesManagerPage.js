@@ -25,10 +25,12 @@ export default function SalesManagerPage() {
     }
   };
 
-  useEffect(() => { loadPendingProducts(); }, []);
+  useEffect(() => {
+    loadPendingProducts();
+  }, []);
 
   const handlePriceChange = (id, val) =>
-    setPriceEdits(prev => ({ ...prev, [id]: val }));
+    setPriceEdits((prev) => ({ ...prev, [id]: val }));
 
   const updatePrice = async (id) => {
     const price = Number(priceEdits[id]);
@@ -41,15 +43,15 @@ export default function SalesManagerPage() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${adminToken}`
+          Authorization: `Bearer ${adminToken}`,
         },
-        body: JSON.stringify({ price })
+        body: JSON.stringify({ price }),
       });
       const json = await res.json();
       if (json.success) {
         setStatus({ msg: "Price updated successfully", error: false });
-        setPriceEdits(prev => ({ ...prev, [id]: undefined }));
-        setProducts(prev => prev.filter(p => p._id !== id));
+        setPriceEdits((prev) => ({ ...prev, [id]: undefined }));
+        setProducts((prev) => prev.filter((p) => p._id !== id));
       } else {
         setStatus({ msg: json.msg || "Failed to update price", error: true });
       }
@@ -67,6 +69,7 @@ export default function SalesManagerPage() {
         <div className="sales-actions">
           <button onClick={() => navigate("/refund-requests")}>Refund Requests</button>
           <button onClick={() => navigate("/sales-manager-invoices")}>Invoices</button>
+          <button onClick={() => navigate("/discount")}>Discount</button>
         </div>
         {status.msg && (
           <p className={`sales-status ${status.error ? "error" : "ok"}`}>
@@ -81,7 +84,7 @@ export default function SalesManagerPage() {
           <p className="sales-empty">No products need pricing at this time.</p>
         ) : (
           <div className="sales-list">
-            {products.map(product => (
+            {products.map((product) => (
               <div className="sales-card" key={product._id}>
                 <div className="sales-info">
                   <h3>{product.name}</h3>
@@ -98,7 +101,7 @@ export default function SalesManagerPage() {
                     step="0.01"
                     placeholder="Enter price"
                     value={priceEdits[product._id] || ""}
-                    onChange={e => handlePriceChange(product._id, e.target.value)}
+                    onChange={(e) => handlePriceChange(product._id, e.target.value)}
                   />
                   <button onClick={() => updatePrice(product._id)}>Set Price</button>
                 </div>

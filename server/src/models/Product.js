@@ -18,6 +18,16 @@ const ProductSchema = new mongoose.Schema({
   stock:         { type: Number,  default: 10 },
   description:   { type: String,  default: "" },
 
+  /* -------- Discount Fields -------- */
+  discountAmount: {
+    type: Number,
+    default: null,
+  },
+  discountedPrice: {
+    type: Number,
+    default: null,
+  },
+
   /* -------- Finite, validated category -------- */
   category: {
     type: String,             // <-- stays a plain string for the UI
@@ -27,8 +37,8 @@ const ProductSchema = new mongoose.Schema({
         // True  → category exists   |   False → validation error
         return await Category.exists({ name: value });
       },
-      message: (props) =>
-        `Category "${props.value}" does not exist. Add it first or pick an existing one.`,
+      message: (props) => 
+  `Category "${props.value}" does not exist. Add it first or pick an existing one.`,
     },
   },
 });
