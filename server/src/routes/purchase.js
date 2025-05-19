@@ -255,6 +255,78 @@ router.get("/all", requireAdmin, async (req, res) => {
   }
 });
 
+/* ──────────────────────────  SALES ANALYTICS  ────────────────────────── */
+/**
+ *  GET /purchase/metrics
+ *  ↳  Aggregate revenue & profit (cost = ½ × Product.price × qty)
+ *
+ *  Query params
+ *    granularity  day | month | year  (default "month")
+ *    start        ISO date (inclusive) - optional
+ *    end          ISO date (inclusive) - optional
+ *
+ *  Response:  { success:true, data:[
+ *                { label:"2025-05", revenue:1234.56, profit:789.01 },
+ *                …
+ *              ] }
+ */
+router.get("/metrics", requireAdmin, async (req, res) => {
+  try {
+    const { granularity = "month", start, end } = req.query;
+
+    /* ---------- optional date window ---------- */
+    const match = {};
+    if (start) match.purchaseDate = { ...match.purchaseDate, $gte: new Date(start) };
+    if (end)   match.purchaseDate = { ...match.purchaseDate, $lte: new Date(end)   };
+
+    /* ---------- fetch purchases + pull unit price from Product ---------- */
+    const purchases = await Purchase
+      .find(match)
+      .populate("productId", "price")          // only need price
+      .select("purchaseDate quantity totalPrice");
+
+    /* ---------- helper to label buckets ---------- */
+    const makeLabel = (d) => {
+      const y  = d.getUTCFullYear();
+      const m  = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const dd = String(d.getUTCDate()).padStart(2, "0");
+      if (granularity === "day")  return `${y}-${m}-${dd}`;
+      if (granularity === "year") return `${y}`;
+      return `${y}-${m}`;                 // default → month
+    };
+
+    /* ---------- aggregate ---------- */
+    const grouped = {};   // { label: { revenue:…, profit:… } }
+
+    purchases.forEach((p) => {
+      const label   = makeLabel(p.purchaseDate);
+      const revenue = Number(p.totalPrice) || 0;
+
+      // unit cost = 0.5 × current Product.price
+      const unitPrice = Number(p.productId?.price) || 0;
+      const cost      = 0.5 * unitPrice * p.quantity;
+      const profit    = revenue - cost;
+
+      grouped[label] ??= { revenue: 0, profit: 0 };
+      grouped[label].revenue += revenue;
+      grouped[label].profit  += profit;
+    });
+
+    const data = Object.entries(grouped)
+      .sort(([a],[b]) => a.localeCompare(b))          // chronological
+      .map(([label, { revenue, profit }]) => ({
+        label,
+        revenue: Number(revenue.toFixed(2)),
+        profit : Number(profit .toFixed(2)),
+      }));
+
+    res.json({ success: true, data });
+  } catch (err) {
+    console.error("Error aggregating metrics:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // --- ADMIN: UPDATE PURCHASE STATUS ---
 router.patch("/:id/status", requireAdmin, async (req, res) => {
   const { id } = req.params;

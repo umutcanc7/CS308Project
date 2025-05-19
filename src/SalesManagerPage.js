@@ -70,6 +70,7 @@ export default function SalesManagerPage() {
           <button onClick={() => navigate("/refund-requests")}>Refund Requests</button>
           <button onClick={() => navigate("/sales-manager-invoices")}>Invoices</button>
           <button onClick={() => navigate("/discount")}>Discount</button>
+          <button onClick={() => navigate("/sales-manager-charts")}>Charts</button>
         </div>
         {status.msg && (
           <p className={`sales-status ${status.error ? "error" : "ok"}`}>

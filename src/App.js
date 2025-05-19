@@ -24,6 +24,7 @@ import RefundRequestsPage from "./RefundRequestsPage";
 import SalesManagerInvoices from "./SalesManagerInvoices";
 import AdminOrderReceipt from "./AdminOrderReceipt";
 import Discount from "./discount";  // ✅ NEW IMPORT
+import SalesManagerCharts from "./SalesManagerRevenue"
 
 import "./App.css";
 
@@ -118,6 +119,7 @@ export default function App() {
 
           {/* NEW: Discount Page */}
           <Route path="/discount" element={<Discount />} />
+          <Route path="/sales-manager-charts" element={<SalesManagerCharts />} />
         </Routes>
 
         {/* User Bar and Auth Modal */}
