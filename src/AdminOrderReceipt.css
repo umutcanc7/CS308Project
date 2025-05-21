@@ -1,0 +1,46 @@
+/* ───────── GLOBAL NAVBAR HEIGHT ───────── */
+:root { --navbar-height: 90px; }
+
+/* ───────── PAGE WRAPPER ───────── */
+.admin-receipt-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: calc(var(--navbar-height) + 1rem) 1rem 2rem;
+  text-align: center;
+  background: #fdfdfd;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.admin-receipt-page h2 {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* ───────── EMBEDDED PDF ───────── */
+.receipt-iframe {
+  width: 100%;
+  height: 80vh;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* ───────── LINKS & BUTTONS ───────── */
+.admin-receipt-page a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.admin-receipt-page a:hover { text-decoration: underline; }
+
+.admin-receipt-page button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-receipt-page button:hover { background: #0060d1; }

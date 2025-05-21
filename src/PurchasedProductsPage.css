@@ -1,0 +1,171 @@
+/* PurchasedProductsPage.css */
+/* ───────── GLOBAL PAGE STYLE ───────── */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: auto;
+  background: #f5f5f5;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  scroll-behavior: smooth;
+}
+
+/* ───────── MAIN CONTAINER ───────── */
+.purchased-page {
+  width: 100%;
+  max-width: 1800px;            /* ← widened so 7 thumbs fit easily */
+  margin: 0 auto;
+  /* Reduced top padding from 120px to 60px */
+  padding: 60px 1rem 2rem;
+  box-sizing: border-box;
+}
+
+.purchased-page h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+}
+
+/* ───────── ORDER ROW ───────── */
+.order-row {
+  display: grid;
+  grid-template-columns: 260px 1fr 40px;
+  /* widened left block from 220 → 260 */
+  align-items: center;
+  gap: 1rem;
+  
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  padding: 0.8rem 1.4rem;
+  margin-bottom: 1rem;
+  min-height: 90px;
+  
+  /* Fixed constant width for all order boxes */
+  width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* left-hand block */
+.order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.order-date   { font-weight: 600; }
+.order-id     { font-size: 0.8rem; color: #666; }
+.order-total  { color: #d2691e; }
+.order-status { font-size: 0.85rem; color: #2c2c2c; }
+
+/* Thumbnails (centre) */
+.thumb-list {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.thumb-list img {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.more-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+  padding: 0 4px;
+}
+
+/* Arrow button (right) */
+.details-btn {
+  background: transparent;
+  border: none;
+  font-size: 1.6rem;
+  color: #999;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+.details-btn:hover { color: #444; }
+
+/* ───────── PAGINATION STYLES ───────── */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.pagination-btn {
+  background: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  /* Reduced arrow button width */
+  width: 120px;
+}
+
+.pagination-btn:disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-btn:not(:disabled):hover {
+  background: #f0f0f0;
+}
+
+.pagination-numbers {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-number {
+  background: transparent;
+  border: none;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.pagination-number:hover {
+  background: #f0f0f0;
+}
+
+.pagination-number.active {
+  background: #d2691e;
+  color: white;
+}
+
+/* ───────── RESPONSIVE ───────── */
+@media (max-width: 768px) {
+  .order-row {
+    grid-template-columns: 150px 1fr 32px;
+    padding: 0.7rem 1rem;
+    width: 95%;
+    min-height: 80px;
+  }
+  .thumb-list img { width: 45px; height: 45px; }
+  
+  .pagination {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .pagination-btn {
+    width: 80px;
+  }
+}

@@ -1,9 +1,10 @@
-// src/AuthModal.js
+// frontend AuthModal.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "./CartContext"; // Import refreshCart from cart context
 import "./AuthModal.css";
 
-function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn }) {
+function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn, openModal }) {
   const [activeTab, setActiveTab] = useState(defaultActiveTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -12,9 +13,10 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
   const [phone, setPhone] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
+  const { refreshCart } = useCart(); // used to load backend cart after merging
+
   // Key for local cart in localStorage
   const CART_STORAGE_KEY = "shopping_cart";
-
   const navigate = useNavigate();
 
   const resetForm = () => {
@@ -26,7 +28,7 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
     setRememberMe(false);
   };
 
-  // Merge local cart with server-side cart
+  // Merge local cart with server-side cart.
   const mergeCart = async (token) => {
     try {
       const localCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -56,68 +58,192 @@ function AuthModal({ isOpen, onClose, defaultActiveTab = "login", setIsSignedIn 
     }
   };
 
+
   const handleLogin = async (e) => {
     e.preventDefault();
+  
     try {
+      /* ────────── basic client-side validation ────────── */
+      if (!email || !password) {
+        alert("Please fill in all fields");
+        return;
+      }
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address");
+        return;
+      }
+  
+      /* ────────── send login request ────────── */
       const response = await fetch("http://localhost:5001/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mail_adress: email, password, rememberMe }),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          mail_adress: email.trim(),
+          password:    password.trim(),
+          rememberMe
+        })
       });
-
+  
       const data = await response.json();
-      if (response.ok) {
+  
+      /* ────────── handle success ────────── */
+      if (response.ok && data.success) {
+        /* ---------- ADMIN ---------- */
+        if (data.role === "admin") {
+          localStorage.setItem("adminToken", data.token);
+          alert("Logged in as admin");
+          resetForm();
+          onClose();
+          setIsSignedIn(true);
+          navigate("/product-manager-page");   // redirect to admin panel
+          return;                              // no cart/profile work for admins
+        }
+  
+        /* ---------- SALES-ADMIN ---------- */
+        if (data.role === "salesAdmin") {
+          localStorage.setItem("salesAdminToken", data.token);
+          alert("Logged in as sales manager");
+          resetForm();
+          onClose();
+          setIsSignedIn(true);
+          navigate("/sales-manager-page");     // redirect to sales manager panel
+          return;                              // skip cart/profile merge
+        }
+  
+        /* ---------- REGULAR USER ---------- */
         localStorage.setItem("token", data.token);
-        alert("Login Successful");
+        localStorage.setItem("showSaleNotification", "true");  // ← NEW
+  
+        try {
+          /* fetch profile so we can cache it locally */
+          const profileResp = await fetch("http://localhost:5001/user/profile", {
+            headers: {
+              "Authorization": `Bearer ${data.token}`,
+              "Accept":        "application/json"
+            }
+          });
+          if (!profileResp.ok) throw new Error("Profile fetch failed");
+          const profileData = await profileResp.json();
+          if (profileData.success) {
+            localStorage.setItem("userData", JSON.stringify(profileData.data));
+          }
+        } catch (profileErr) {
+          console.error("Profile fetch error:", profileErr);
+          /* non-fatal – continue the flow */
+        }
+  
+        // alert("Login successful");
         setIsSignedIn(true);
-        await mergeCart(data.token);
+        await mergeCart(data.token);   // merge local cart with backend
+        await refreshCart();           // reload cart context
         resetForm();
         onClose();
         navigate("/shop");
-      } else {
-        console.error("Login error:", data);
-        alert(data.message || "An error occurred during login");
+        return;
       }
-    } catch (error) {
-      console.error("Error during login fetch:", error);
-      alert("An error occurred during login");
+  
+      /* ────────── handle failure ────────── */
+      const errorMessage = data.message || "Invalid email or password";
+      alert(errorMessage);
+  
+    } catch (err) {
+      console.error("Login error:", err);
+      if (!navigator.onLine) {
+        alert("Please check your internet connection");
+      } else {
+        alert("Server error. Please try again later");
+      }
     }
   };
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
     try {
+      // Basic validation
+      if (!fullName || !email || !password || !confirmPassword) {
+        alert("Please fill in all required fields");
+        return;
+      }
+
+      // Email format validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert("Please enter a valid email address");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("Password must be at least 6 characters long");
+        return;
+      }
+
       const response = await fetch("http://localhost:5001/auth/register", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify({
-          name: fullName,
-          mail_adress: email,
-          password,
-          phone_number: phone,
+          name: fullName.trim(),
+          mail_adress: email.trim(),
+          password: password.trim(),
+          phone_number: phone.trim(),
         }),
       });
 
       const data = await response.json();
-      if (response.ok) {
+      
+      if (response.ok && data.success) {
         localStorage.setItem("token", data.token);
+
+        try {
+          const profileResponse = await fetch("http://localhost:5001/user/profile", {
+            headers: {
+              "Authorization": `Bearer ${data.token}`,
+              "Accept": "application/json"
+            }
+          });
+          
+          if (!profileResponse.ok) {
+            throw new Error("Failed to fetch profile data");
+          }
+          
+          const profileData = await profileResponse.json();
+          if (profileData.success) {
+            localStorage.setItem("userData", JSON.stringify(profileData.data));
+          }
+        } catch (profileError) {
+          console.error("Profile fetch error:", profileError);
+          // Continue with registration even if profile fetch fails
+        }
+
         alert("User registered successfully!");
         setIsSignedIn(true);
         await mergeCart(data.token);
+        await refreshCart();
         resetForm();
         onClose();
         navigate("/shop");
       } else {
-        console.error("Sign up error:", data);
-        alert(data.message || "An error occurred during sign up");
+        const errorMessage = data.message || "Registration failed. Please try again.";
+        alert(errorMessage);
       }
     } catch (error) {
-      console.error("Error during sign up fetch:", error);
-      alert("An error occurred during sign up");
+      console.error("Registration error:", error);
+      if (!navigator.onLine) {
+        alert("Please check your internet connection");
+      } else {
+        alert("Server error. Please try again later");
+      }
     }
   };
 

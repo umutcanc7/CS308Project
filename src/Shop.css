@@ -1,100 +1,190 @@
-/* src/Shop.css */
+/* Shop.css – scroll-bar absolutely flush right */
 
-/* Shop page container with extra top padding to avoid overlapping fixed header elements */
 .shop-page {
-  padding: 70px 20px 20px;
+  padding: 30px 0 20px 0;
   text-align: center;
+  height: 100vh;
+  width: 100vw;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  box-sizing: border-box;
 }
 
-/* Shop header styles */
+/* ---------- Header ---------- */
 .shop-header {
   margin-bottom: 30px;
   color: #333;
 }
-
 .shop-header h2 {
   font-size: 28px;
   margin-bottom: 10px;
 }
-
 .shop-header p {
   font-size: 16px;
   color: #666;
 }
 
-/* Products grid layout */
-.products {
+/* ---------- Controls ---------- */
+.shop-controls {
   display: flex;
   justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 20px;
+}
+.shop-controls select,
+.shop-controls input {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+.shop-controls input {
+  width: 160px;
+  max-width: 100%;
 }
 
-/* Product card styling (updated selector to match the component markup) */
+/* ---------- Product grid ---------- */
+.products {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding-bottom: 120px;
+  justify-items: center;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
 .product-card {
   background: #fff;
   border: 1px solid #ddd;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
   width: 220px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: 380px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
 .product-card:hover {
-  transform: scale(1.05);
+  transform: scale(1.02);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-.product-card img {
+/* ---------- Image ---------- */
+.product-image-container {
   width: 100%;
-  height: auto;
-  border-radius: 4px;
-}
-
-/* Fixed positioning for auth links (cart, login/sign up, etc.) at top right */
-.auth-links {
-  position: fixed;
-  top: 10px;
-  right: 20px;
-  color: #000;
-  font-size: 16px;
-  cursor: pointer;
+  height: 190px;
   display: flex;
+  justify-content: center;
   align-items: center;
+  overflow: hidden;
+}
+.product-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
-/* Optional styling for the cart and heart icons */
-.cart-icon,
-.heart-icon {
-  margin-left: 10px;
+/* ---------- Title and Description ---------- */
+.product-card h3 {
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 8px 0 4px;
+  text-align: center;
+}
+.product-description {
+  font-size: 0.85rem;
+  color: #777;
+  margin-bottom: 6px;
+  text-align: center;
 }
 
-/* Icon styling */
-.icon {
-  width: 24px;
-  height: 24px;
-  margin: 0 8px;
-  cursor: pointer;
-  vertical-align: middle;
+/* ---------- Price Display ---------- */
+.product-price-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.product-price {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  margin: 0;
+}
+
+.original-price {
+  text-decoration: line-through;
+  color: #999;
+  font-size: 0.95rem;
+  margin-right: 6px;
+}
+
+.discounted-price {
+  color: #e74c3c;  /* Red */
+  font-weight: bold;
+  font-size: 1.05rem;
+}
+
+.sale-indicator {
+  color: #e74c3c;
+  font-weight: bold;
+  font-size: 0.85rem;
   margin-top: 4px;
 }
 
-/* Sign out button styling */
-.signout-button {
-  cursor: pointer;
-  margin-left: 12px;
-  vertical-align: middle;
+/* ---------- Rating ---------- */
+.product-rating {
+  font-size: 14px;
+  text-align: center;
+  margin-top: auto;
+  margin-bottom: 8px;
+}
+.stars {
+  color: #ddd;
+  font-size: 18px;
+}
+.star.filled {
+  color: #ffd700;
+}
+.rating-count,
+.no-ratings {
+  font-size: 13px;
+  color: #666;
+  margin-left: 4px;
 }
 
-/* Menu styling for top left.
-   Assumes the Menu component renders a <nav> element or uses a class of "menu". */
-.shop-page > nav,
-.shop-page > .menu {
-  position: fixed;
-  top: 10px;
-  left: 20px;
-  color: #000;
-  font-size: 18px;
+/* ---------- Button ---------- */
+.add-to-cart-btn {
+  padding: 8px;
+  background: #000;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+.add-to-cart-btn:hover {
+  background: #333;
+}
+.add-to-cart-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* ---------- Scrollbar Styling ---------- */
+.shop-page::-webkit-scrollbar {
+  width: 8px;
+}
+.shop-page::-webkit-scrollbar-track {
+  background: transparent;
+}
+.shop-page::-webkit-scrollbar-thumb {
+  background: #999;
+  border-radius: 6px;
+}
+.shop-page::-webkit-scrollbar-thumb:hover {
+  background: #666;
 }

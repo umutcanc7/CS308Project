@@ -1,0 +1,189 @@
+.refund-requests-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.refund-requests-page h1 {
+  color: #333;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.requests-list {
+  display: grid;
+  gap: 2rem;
+}
+
+.request-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.request-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.status {
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status.approved {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status.rejected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.request-details {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.product-info {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.product-info img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.product-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.product-info p {
+  margin: 0.25rem 0;
+  color: #666;
+}
+
+.user-info {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.user-info p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.admin-actions {
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-actions textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.approve-btn,
+.reject-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.approve-btn {
+  background: #28a745;
+  color: white;
+}
+
+.approve-btn:hover {
+  background: #218838;
+}
+
+.reject-btn {
+  background: #dc3545;
+  color: white;
+}
+
+.reject-btn:hover {
+  background: #c82333;
+}
+
+.approve-btn:disabled,
+.reject-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.admin-notes {
+  background: #e9ecef;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.admin-notes h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.admin-notes p {
+  margin: 0;
+  color: #666;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #dc3545;
+}
+
+.no-requests {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  background: #f8f9fa;
+  border-radius: 8px;
+} 

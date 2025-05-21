@@ -1,9 +1,68 @@
 /* Global app container */
 .App {
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   background-color: #F0EAD6; /* If you want a global background */
   margin: 0;
   padding: 0;
+}
+
+/* Ensure the root element and body also have the background color */
+:root, body {
+  margin: 0;
+  padding: 0;
+  background-color: #F0EAD6;
+  min-height: 100vh;
+}
+
+body {
+  margin: 0;
+  padding-top: 60px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+               Helvetica, Arial, sans-serif;
+}
+
+
+/* --- ProductManagerPage sticky header and scrollable list --- */
+.sticky-header {
+  /* position: sticky; */
+  /* top: 0; */
+  background: #F0EAD6;
+  z-index: 2;
+  padding-bottom: 10px;
+}
+
+.categories-list-container {
+  margin-top: 20px;
+  background: transparent;
+}
+
+/* Optionally, add a little padding to the admin-page */
+.admin-page {
+  padding: 32px 0;
+}
+
+.add-form {
+  margin-bottom: 18px;
+}
+
+.status {
+  margin-bottom: 24px;
+}
+
+.add-form button {
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: none;
+}
+.add-form button:hover, .add-form button:focus {
+  background: #222;
+  color: #fff;
 }

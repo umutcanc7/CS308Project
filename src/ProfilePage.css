@@ -1,0 +1,121 @@
+/* Global settings to prevent overflow */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+.profile-page {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;  /* Remove background */
+  overflow: hidden; 
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Adjust the profile card width */
+.profile-card {
+  width: 500px;             /* Adjusted width */
+  padding: 32px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  text-align: left;
+  overflow: hidden;         /* Prevent card scrolling */
+  box-sizing: border-box;
+}
+
+.profile-card h1 {
+  margin-bottom: 24px;
+  font-size: 1.8rem;
+  color: #333;
+  font-weight: bold;
+  text-align: center;
+}
+
+.field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fbfd;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.label {
+  font-weight: 600;
+  color: #555;
+}
+
+.value {
+  color: #222;
+  font-weight: 500;
+}
+
+.update-btn {
+  width: 100%;
+  background-color: #007bff;
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.update-btn:hover {
+  background-color: #0056b3;
+}
+
+.update-modal {
+  background-color: #fafafa;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 16px;
+}
+
+.update-modal input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  transition: background-color 0.3s;
+}
+
+.modal-actions button:hover {
+  background-color: #0056b3;
+}
+
+.error {
+  color: #ff4d4f;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}

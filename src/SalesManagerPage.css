@@ -1,0 +1,170 @@
+.sales-page {
+  padding: 40px 20px;
+  background-color: #f5f5dc;
+  font-family: 'Segoe UI', sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.sales-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.sales-title {
+  margin-bottom: 12px;
+  font-size: 30px;
+  color: #222;
+}
+
+.sales-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.sales-actions button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sales-actions button:hover {
+  background-color: #0056b3;
+}
+
+.discount-button {
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.discount-button:hover {
+  background-color: #218838;
+}
+
+.sales-section {
+  background-color: white;
+  border-radius: 10px;
+  padding: 24px;
+  width: 100%;
+  max-width: 750px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.sales-section h2 {
+  margin-top: 0;
+  font-size: 22px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.sales-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sales-card {
+  background-color: #fdfdfd;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+}
+
+.sales-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: #444;
+}
+
+.sales-info h3 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  color: #222;
+}
+
+.sales-price-form {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.sales-price-form input {
+  padding: 8px 10px;
+  font-size: 14px;
+  width: 100px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: #fef9ec;
+}
+
+.sales-price-form button {
+  background-color: #007bff;
+  color: white;
+  padding: 8px 14px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.sales-price-form button:hover {
+  background-color: #0056b3;
+}
+
+.sales-empty {
+  font-style: italic;
+  color: #888;
+  text-align: center;
+  padding: 25px;
+}
+
+.sales-status {
+  margin-top: 20px;
+  padding: 10px;
+  font-weight: 500;
+  border-radius: 6px;
+}
+
+.sales-status.ok {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.sales-status.error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.sales-loading {
+  text-align: center;
+  font-size: 18px;
+  padding: 60px;
+  color: #666;
+}

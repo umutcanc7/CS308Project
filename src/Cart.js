@@ -1,77 +1,188 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+// src/Cart.js
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from './CartContext';
 import './Cart.css';
 
+const images = require.context('./assets', false, /\.(png|jpe?g|webp|svg)$/);
+
 function Cart() {
+  const navigate = useNavigate();
   const { cart, removeFromCart, updateQuantity, getTotalPrice } = useCart();
+  const [productImages, setProductImages] = useState({});
+
+  const getImage = (imageName) => {
+    if (!imageName) return images('./logo.png');
+    try {
+      return images(`./${imageName}`);
+    } catch {
+      return images('./logo.png');
+    }
+  };
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const newMap = {};
+      for (const item of cart) {
+        try {
+          const res = await fetch(`http://localhost:5001/products/${item.id}`);
+          const data = await res.json();
+          if (data.success && data.data?.image1) {
+            newMap[item.id] = data.data.image1;
+          }
+        } catch (err) {
+          console.error(`Error fetching product ${item.id}:`, err);
+        }
+      }
+      setProductImages(newMap);
+    };
+
+    if (cart.length > 0) {
+      fetchImages();
+    }
+  }, [cart]);
+
+  const handleCheckout = async () => {
+    if (!cart.length) {
+      alert('Cart is empty!');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in before checkout.');
+      return;
+    }
+
+    try {
+      const res = await fetch('http://localhost:5001/cart/user/address', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert('Error fetching user address.');
+        return;
+      }
+
+      const address = data.address?.trim();
+      if (!address) {
+        alert('Please enter your address from the profile page to proceed with the purchase process.');
+        return;
+      }
+
+      navigate('/credit-card-form');
+
+    } catch (error) {
+      console.error('Error checking address:', error);
+      alert('Error checking address.');
+    }
+  };
+
+  const handleQuantityChange = async (item, newQuantity) => {
+    try {
+      const response = await fetch(`http://localhost:5001/products/${item.id}`);
+      const data = await response.json();
+
+      if (data.success) {
+        const currentStock = data.data.stock;
+        if (newQuantity > currentStock) {
+          alert(`❌ Cannot add more items. Only ${currentStock} available in stock.`);
+          return;
+        }
+        if (newQuantity > 0) {
+          updateQuantity(item.id, newQuantity);
+        } else {
+          removeFromCart(item.id);
+        }
+      } else {
+        alert('❌ Error checking product stock');
+      }
+    } catch (error) {
+      console.error('Error checking stock:', error);
+      alert('❌ Error checking product stock');
+    }
+  };
 
   return (
-    <div className="cart-page">
-      <h2>Your Shopping Cart</h2>
-      
-      {cart.length === 0 ? (
-        <div className="empty-cart">
-          <p>Your cart is empty.</p>
-          <Link to="/shop" className="continue-shopping-btn">
-            Continue Shopping
-          </Link>
-        </div>
-      ) : (
-        <>
-          {/* kolpa productlar  */}
-          <div className="cart-items">
-            {cart.map((item) => (
-              <div key={item.id} className="cart-item">
-                <img src={item.image} alt={item.name} className="cart-item-image" />
-                <div className="cart-item-details">
-                  <h3>{item.name}</h3>
-                  <p className="cart-item-price">${item.price.toFixed(2)}</p>
-                </div>
-                <div className="cart-item-quantity">
-                  <button 
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="quantity-btn"
+    <div className="cart-container">
+      <div className="cart-page">
+        <h2>Your Shopping Cart</h2>
+
+        {cart.length === 0 ? (
+          <div className="empty-cart">
+            <p>Your cart is empty.</p>
+            <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
+          </div>
+        ) : (
+          <>
+            <div className="cart-items">
+              {cart.map((it) => (
+                <div key={it.id} className="cart-item">
+                  <img
+                    src={getImage(productImages[it.id])}
+                    alt={it.name}
+                    className="cart-item-image"
+                  />
+                  <div className="cart-item-details">
+                    <h3>{it.name}</h3>
+                    {it.discountedPrice ? (
+                      <div className="cart-item-price">
+                        <span className="original-price">€{it.price.toFixed(2)}</span>
+                        <span className="discounted-price">€{it.discountedPrice.toFixed(2)}</span>
+                        <span className="discount-badge">-{it.discountAmount}%</span>
+                      </div>
+                    ) : (
+                      <p className="cart-item-price">€{it.price.toFixed(2)}</p>
+                    )}
+                  </div>
+                  <div className="cart-item-quantity">
+                    <button
+                      className="quantity-btn"
+                      onClick={() => handleQuantityChange(it, it.quantity - 1)}
+                      disabled={it.quantity <= 1}
+                    >
+                      −
+                    </button>
+                    <span>{it.quantity}</span>
+                    <button
+                      className="quantity-btn"
+                      onClick={() => handleQuantityChange(it, it.quantity + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="cart-item-total">
+                    €{((it.discountedPrice || it.price) * it.quantity).toFixed(2)}
+                  </div>
+                  <button
+                    className="remove-btn"
+                    onClick={() => removeFromCart(it.id)}
                   >
-                    -
-                  </button>
-                  <span>{item.quantity}</span>
-                  <button 
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="quantity-btn"
-                  >
-                    +
+                    Remove
                   </button>
                 </div>
-                <div className="cart-item-total">
-                  ${(item.price * item.quantity).toFixed(2)}
-                </div>
-                <button 
-                  onClick={() => removeFromCart(item.id)}
-                  className="remove-btn"
-                >
-                  Remove
+              ))}
+            </div>
+
+            <div className="cart-summary">
+              <div className="cart-total">
+                <span>Total:</span>
+                <span>€{getTotalPrice().toFixed(2)}</span>
+              </div>
+              <div className="cart-actions">
+                <Link to="/shop" className="continue-shopping-btn">Continue Shopping</Link>
+                <button className="checkout-btn" onClick={handleCheckout}>
+                  Proceed to Checkout
                 </button>
               </div>
-            ))}
-          </div>
-          
-          <div className="cart-summary">
-            <div className="cart-total">
-              <span>Total:</span>
-              <span>${getTotalPrice().toFixed(2)}</span>
             </div>
-            <div className="cart-actions">
-              <Link to="/shop" className="continue-shopping-btn">
-                Continue Shopping
-              </Link>
-              <button className="checkout-btn">
-                Proceed to Checkout
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

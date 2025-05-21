@@ -1,0 +1,213 @@
+/* ───────── GLOBAL NAVBAR HEIGHT ───────── */
+:root { --navbar-height: 90px; }
+
+/* ───────── PAGE WRAPPER ───────── */
+.sales-invoices-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: calc(var(--navbar-height) + 1rem) 1rem 2rem;
+  background: #fdfdfd;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.sales-invoices-page h2 {
+  text-align: center;
+  margin-bottom: 1.8rem;
+  color: #2e8b57;
+}
+
+/* ───────── DATE FILTER SECTION ───────── */
+.date-filter-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.date-label {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.date-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.date-inputs input {
+  width: 180px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #eee4d8;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.date-inputs input:focus {
+  outline: 2px solid #d2691e;
+}
+
+.show-all-btn {
+  margin-top: 10px;
+  padding: 16px 16px;
+  margin-bottom: 20px;  /* Add spacing below the button */
+  width: 200px;  /* Set desired width here */
+  background-color: #b89f8c;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 5px;
+  transition: background 0.2s;
+}
+
+.show-all-btn:hover {
+  background-color: #a17766;
+}
+
+/* ───────── EMPTY STATE ───────── */
+.sales-invoices-page .empty {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  margin-top: 2rem;
+}
+
+/* ───────── ORDER ROW ───────── */
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  background: #ffffff;
+  padding: 1rem 1.4rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1rem;
+}
+
+.order-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 230px;
+}
+
+.order-date,
+.order-id,
+.order-buyer,
+.order-total,
+.order-status {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.order-total strong {
+  color: #d2691e;
+}
+
+.thumb-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+}
+
+.thumb-list img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
+.more-count {
+  font-size: 0.8rem;
+  color: #555;
+  align-self: center;
+}
+
+/* details “>” button */
+.details-btn {
+  margin-left: auto;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 34px;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.details-btn:hover {
+  background: #0060d1;
+}
+
+/* ───────── PAGINATION ───────── */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.8rem;
+  gap: 1rem;
+}
+
+.pagination button {
+  background: transparent;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.pagination button:disabled {
+  color: #bbb;
+  cursor: not-allowed;
+}
+
+.pagination .active {
+  background: #d2691e;
+  color: #fff;
+  border-color: #d2691e;
+}
+
+/* ───────── RESPONSIVE ───────── */
+@media (max-width: 768px) {
+  .order-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .details-btn {
+    align-self: flex-end;
+  }
+
+  .date-inputs {
+    width: 100%;
+  }
+
+  .date-inputs input {
+    width: 100%;
+  }
+
+  .show-all-btn {
+    width: 100%;
+  }
+}

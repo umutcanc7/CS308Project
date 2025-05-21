@@ -1,134 +1,249 @@
+// src/CartContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CART_STORAGE_KEY = 'shopping_cart';
 const CartContext = createContext();
 
+const API_URL = 'http://localhost:5001/cart';
+
 export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+  // If not logged in, load the initial cart from localStorage.
+  const initialToken = localStorage.getItem("token");
+  const initialCart = initialToken ? [] : JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
+  const [cart, setCart] = useState(initialCart);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Load cart from localStorage on component mount
-  useEffect(() => {
+  // Function to load cart from the backend when logged in.
+  const loadCartFromBackend = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
     try {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-      if (savedCart) {
-        const parsedCart = JSON.parse(savedCart);
-        if (Array.isArray(parsedCart)) {
-          setCart(parsedCart);
-          console.log('Cart loaded from localStorage:', parsedCart);
-        } else {
-          console.warn('Saved cart is not an array, initializing empty cart');
-          setCart([]);
-        }
+      const response = await fetch(API_URL, {
+        method: "GET",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        const items = data.data.map((item) => ({
+          id: item.productId._id,
+          name: item.productId.name,
+          image: item.productId.image,
+          price: item.productId.price,
+          quantity: item.quantity,
+          stock: item.productId.stock // Add stock information
+        }));
+
+        // Validate quantities against stock before setting cart
+        const validatedItems = items.map(item => ({
+          ...item,
+          quantity: Math.min(item.quantity, item.stock) // Ensure quantity doesn't exceed stock
+        }));
+
+        setCart(validatedItems);
+        console.log("🛒 Cart loaded from backend:", validatedItems);
+      } else {
+        console.warn("Failed to load cart from backend:", data.error);
       }
     } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
-      setCart([]);
-    } finally {
+      console.error("Error loading cart from backend:", error);
+    }
+  };
+
+  // Expose refreshCart to be called from other components (e.g., AuthModal)
+  const refreshCart = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      await loadCartFromBackend();
+    } else {
+      const localCartData = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
+      setCart(localCartData);
+    }
+  };
+
+  // On mount, if the user is logged in, load the cart from the backend.
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      loadCartFromBackend().finally(() => setIsInitialized(true));
+    } else {
       setIsInitialized(true);
     }
   }, []);
 
-  // Save cart to localStorage whenever it changes
+  // Save to localStorage for persistence when not logged in.
   useEffect(() => {
-    if (isInitialized) {
-      try {
-        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-        console.log('Cart saved to localStorage:', cart);
-      } catch (error) {
-        console.error('Error saving cart to localStorage:', error);
-      }
+    const token = localStorage.getItem("token");
+    if (!token) {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     }
-  }, [cart, isInitialized]);
+  }, [cart]);
 
-  // Add item to cart
-  const addToCart = (product) => {
-    if (!product || !product.id) {
-      console.error('Invalid product:', product);
+  const addToCart = async (product) => {
+    if (!product || !product.id) return;
+    const token = localStorage.getItem("token");
+
+    // Check current quantity in cart
+    const currentItem = cart.find(item => item.id === product.id);
+    const currentQuantity = currentItem?.quantity || 0;
+
+    // Don't add if it would exceed stock
+    if (currentQuantity + 1 > product.stock) {
+      console.warn("Cannot add more items: would exceed stock");
       return;
     }
 
-    setCart((prevCart) => {
-      // Check if product already exists in cart
-      const existingItem = prevCart.find(item => item.id === product.id);
-      
-      if (existingItem) {
-        // Increase quantity if product already in cart
-        console.log(`Increasing quantity for ${product.name}`);
-        return prevCart.map(item => 
-          item.id === product.id 
-            ? { ...item, quantity: item.quantity + 1 } 
-            : item
+    if (!token) {
+      setCart(prevCart => {
+        const existing = prevCart.find(item => item.id === product.id);
+        if (existing) {
+          return prevCart;
+        } else {
+          return [...prevCart, { ...product, quantity: 1 }];
+        }
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ 
+          productId: product.id, 
+          quantity: 1,
+          setQuantity: true // Tell backend to set exact quantity rather than add
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.success) {
+        // Instead of reloading entire cart, update just this item
+        setCart(prevCart => {
+          const existing = prevCart.find(item => item.id === product.id);
+          if (existing) {
+            return prevCart;
+          }
+          return [...prevCart, { ...product, quantity: 1 }];
+        });
+      } else {
+        console.error("Add to cart failed:", data.error);
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  };
+
+  const removeFromCart = async (productId) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCart(prevCart => prevCart.filter(item => item.id !== productId));
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: "Bearer " + token,
+        },
+      });
+
+      if (response.ok) {
+        setCart(prevCart => prevCart.filter(item => item.id !== productId));
+      } else {
+        // If delete fails, refresh cart
+        await loadCartFromBackend();
+      }
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+      // On error, refresh cart
+      await loadCartFromBackend();
+    }
+  };
+
+  const updateQuantity = async (productId, newQuantity) => {
+    if (newQuantity < 1) return removeFromCart(productId);
+
+    // Find the product in cart to check stock
+    const product = cart.find(item => item.id === productId);
+    if (!product) return;
+
+    // Don't update if it would exceed stock
+    if (newQuantity > product.stock) {
+      console.warn("Cannot update quantity: would exceed stock");
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setCart(prevCart =>
+        prevCart.map(item =>
+          item.id === productId ? { ...item, quantity: newQuantity } : item
+        )
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        body: JSON.stringify({ 
+          productId, 
+          quantity: newQuantity,
+          setQuantity: true // Tell backend to set exact quantity
+        }),
+      });
+
+      if (response.ok) {
+        setCart(prevCart =>
+          prevCart.map(item =>
+            item.id === productId ? { ...item, quantity: newQuantity } : item
+          )
         );
       } else {
-        // Add new item to cart with quantity 1
-        console.log(`Adding new product to cart: ${product.name}`);
-        return [...prevCart, { ...product, quantity: 1 }];
+        // If update fails, refresh cart to get current state
+        await loadCartFromBackend();
       }
-    });
-  };
-  
-  // Remove item from cart
-  const removeFromCart = (productId) => {
-    if (!productId) {
-      console.error('Invalid product ID:', productId);
-      return;
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      // On error, refresh cart to ensure consistency
+      await loadCartFromBackend();
     }
-    
-    setCart(prevCart => {
-      console.log(`Removing product with ID ${productId} from cart`);
-      return prevCart.filter(item => item.id !== productId);
-    });
   };
-  
-  // Update item quantity
-  const updateQuantity = (productId, newQuantity) => {
-    if (!productId) {
-      console.error('Invalid product ID:', productId);
-      return;
-    }
-    
-    if (newQuantity < 1) {
-      removeFromCart(productId);
-      return;
-    }
-    
-    setCart(prevCart => {
-      console.log(`Updating quantity for product ID ${productId} to ${newQuantity}`);
-      return prevCart.map(item => 
-        item.id === productId 
-          ? { ...item, quantity: newQuantity } 
-          : item
-      );
-    });
-  };
-  
-  // Calculate total items in cart
-  const getTotalItems = () => {
-    return cart.reduce((total, item) => total + (item.quantity || 0), 0);
-  };
-  
-  // Calculate total price
-  const getTotalPrice = () => {
-    return cart.reduce((total, item) => total + (item.price || 0) * (item.quantity || 0), 0);
-  };
-  
-  // Clear the entire cart
+
+  const getTotalItems = () =>
+    cart.reduce((total, item) => total + (item.quantity || 0), 0);
+
+  const getTotalPrice = () =>
+    cart.reduce((total, item) => total + (item.price || 0) * (item.quantity || 0), 0);
+
   const clearCart = () => {
-    console.log('Clearing the cart');
     setCart([]);
+    localStorage.removeItem(CART_STORAGE_KEY);
   };
-  
+
   return (
-    <CartContext.Provider 
-      value={{ 
-        cart, 
-        addToCart, 
-        removeFromCart, 
+    <CartContext.Provider
+      value={{
+        cart,
+        addToCart,
+        removeFromCart,
         updateQuantity,
         getTotalItems,
         getTotalPrice,
-        clearCart
+        clearCart,
+        refreshCart,
       }}
     >
       {children}
