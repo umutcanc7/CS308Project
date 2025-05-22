@@ -93,9 +93,9 @@ const RefundRequestsPage = () => {
               
               <div className="request-details">
                 <div className="product-info">
-                  <img src={getImage(request.productId.image1)} alt={request.productId.name} />
+                  <img src={getImage(request.productId?.image1)} alt={request.productId?.name || "Product"} />
                   <div>
-                    <h4>{request.productId.name}</h4>
+                    <h4>{request.productId?.name || "Unknown Product"}</h4>
                     <p>Quantity: {request.quantity}</p>
                     <p>Total Price: {request.totalPrice} EUR</p>
                   </div>
@@ -136,4 +136,4 @@ const RefundRequestsPage = () => {
   );
 };
 
-export default RefundRequestsPage; 
+export default RefundRequestsPage;
